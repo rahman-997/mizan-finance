@@ -3,7 +3,7 @@ name: Bootstrap final project
 on:
   push:
     paths:
-      - '.bootstrap/source.full.b64'
+      - '.bootstrap/full.part03'
   workflow_dispatch:
 
 permissions:
@@ -22,10 +22,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f .bootstrap/source.full.b64
+          for part in .bootstrap/full.part00 .bootstrap/full.part01 .bootstrap/full.part02 .bootstrap/full.part03; do
+            test -s "$part"
+          done
           rm -rf /tmp/mizan-final
           mkdir -p /tmp/mizan-final
-          base64 -d .bootstrap/source.full.b64 | tar -xzf - -C /tmp/mizan-final
+          cat .bootstrap/full.part00 .bootstrap/full.part01 .bootstrap/full.part02 .bootstrap/full.part03 | base64 -d | tar -xzf - -C /tmp/mizan-final
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a /tmp/mizan-final/. .
 
