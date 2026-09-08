@@ -1,6 +1,8 @@
 {
   "name": "mizan-finance",
   "version": "0.1.0",
+  "description": "Bilingual privacy-first finance planner by Abdulrahman Hajar.",
+  "author": "Abdulrahman Hajar",
   "private": true,
   "engines": {
     "node": ">=22.13.0"

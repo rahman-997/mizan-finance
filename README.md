@@ -87,6 +87,10 @@ See [PROJECT_SUBMISSION.md](./PROJECT_SUBMISSION.md) for the complete product de
 
 Mizan does not transmit financial entries to a server. User-created data remains in the current browser's local storage.
 
+## Author
+
+Designed and developed by **[Abdulrahman Hajar](https://github.com/rahman-997)** — Frontend Engineer and Full-Stack Developer in Istanbul, Türkiye.
+
 ## License
 
 MIT
