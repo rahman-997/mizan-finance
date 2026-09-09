@@ -26,7 +26,7 @@ Mizan is a bilingual, privacy-first personal finance planner built as a complete
 ## Project links
 
 - Repository: https://github.com/rahman-997/mizan-finance
-- Live demo: pending first Cloudflare Workers deployment
+- Live demo: https://mizan-finance-rahman-997.netlify.app
 
 ## Run locally
 
