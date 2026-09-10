@@ -10,6 +10,7 @@ Mizan is a bilingual, privacy-first personal finance planner built as a complete
 - Monthly category budgets and progress tracking
 - Six-month cash-flow and category spending charts
 - Persistent browser storage with loading, success, empty, and recoverable error states
+- Installable PWA with offline app-shell caching
 - English/Arabic localization with RTL support
 - Light and dark themes
 - Accessible semantics, labels, focus states, keyboard controls, and reduced-motion support
