@@ -14,7 +14,7 @@
     "start": "npm run preview",
     "lint": "node scripts/run-tool.mjs eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "node scripts/run-tool.mjs tsc --noEmit",
-    "test": "node --test tests/finance-utils.test.mjs",
+    "test": "node --test tests/finance-utils.test.mjs tests/finance-backup.test.mjs",
     "test:ui": "node --test tests/ui-components.test.mjs",
     "ci": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:ui",
     "deploy": "npm run build && node scripts/run-tool.mjs wrangler deploy"

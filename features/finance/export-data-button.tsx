@@ -6,12 +6,14 @@ import { useFinance } from "./finance-provider";
 import { useLocale } from "./locale-provider";
 
 export function ExportDataButton() {
-  const { transactions, budgets } = useFinance();
+  const { transactions, budgets, recurring } = useFinance();
   const { language } = useLocale();
 
   const exportData = () => {
     const payload = {
       app: "Mizan Finance",
+      version: 2,
+      recurring: recurring || [],
       exportedBy: "Abdulrahman Hajar",
       exportedAt: new Date().toISOString(),
       transactions,

@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {parseBackup,materializeRecurring,nextOccurrence} from '../lib/finance-backup.mjs';
+const draft={title:'Rent',category:'Housing',type:'expense',amount:100,date:'2024-01-31'};
+const data={transactions:[],budgets:[{category:'Housing',limit:200}],recurring:[{id:'r',day:31,nextDate:'2024-01-31',draft}]};
+test('imports legacy exports and rejects unsupported or corrupt data',()=>{assert.deepEqual(parseBackup({app:'Mizan Finance',transactions:[],budgets:[]}),{transactions:[],budgets:[],recurring:[]});for(const v of [null,{...data,version:99},{...data,transactions:[{...draft,id:'x',amount:NaN}]},{...data,transactions:[{...draft,id:'x',date:'2024-02-31'}]},{...data,transactions:[{...draft,id:'x'},{...draft,id:'x'}]}])assert.throws(()=>parseBackup(v));});
+test('month end retains original day across leap February',()=>{assert.equal(nextOccurrence('2024-01-31',31),'2024-02-29');assert.equal(nextOccurrence('2024-02-29',31),'2024-03-31');assert.equal(nextOccurrence('2025-01-31',31),'2025-02-28');});
+test('catch-up is idempotent and does not generate future entries',()=>{const first=materializeRecurring(data,'2024-03-30');assert.equal(first.transactions.length,2);assert.equal(first.recurring[0].nextDate,'2024-03-31');assert.deepEqual(materializeRecurring(first,'2024-03-30'),first);assert.equal(materializeRecurring(first,'2024-03-31').transactions.length,3);});
+test('stopping a rule retains previous entries',()=>{const first=materializeRecurring(data,'2024-02-29');assert.equal(materializeRecurring({...first,recurring:[]},'2024-05-31').transactions.length,2);});

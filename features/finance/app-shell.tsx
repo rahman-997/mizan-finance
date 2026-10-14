@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useFinance } from "./finance-provider";
 import { useLocale } from "./locale-provider";
 import { TransactionForm } from "@/features/transactions/transaction-form";
+import { DataTools } from "./data-tools";
 import { ExportDataButton } from "./export-data-button";
 import { DashboardView } from "@/features/dashboard/dashboard-view";
 import { TransactionsView } from "@/features/transactions/transactions-view";
@@ -88,6 +89,7 @@ export function AppShell({ view }: { view: AppView }) {
         </div>
         <div className="sidebar-actions">
           <ExportDataButton />
+          <DataTools />
           <Button variant="ghost" size="icon" onClick={() => setLanguage(language === "en" ? "ar" : "en")} aria-label={t("switchLanguage")}>
             <Languages />
           </Button>
