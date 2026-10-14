@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { validDate } from "@/lib/finance-backup.mjs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,7 +36,7 @@ const schema = z.object({
     .pipe(z.number().positive("Amount must be greater than zero.").max(1_000_000, "Amount is too large.")),
   type: z.enum(["income", "expense"]),
   category: z.string().min(1, "Choose a category."),
-  date: z.string().min(1, "Choose a date."),
+  date: z.string().refine(validDate, "Choose a valid date between 2000 and 2100."),
   note: z.string().trim().max(180, "Keep the note under 180 characters.").optional(),
 });
 
@@ -53,13 +54,14 @@ const emptyValues: FormValues = {
 };
 
 type Props = {
+  expenseOnly?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   transaction?: Transaction | null;
   onSubmit: (draft: TransactionDraft) => void;
 };
 
-export function TransactionForm({ open, onOpenChange, transaction, onSubmit }: Props) {
+export function TransactionForm({ open, onOpenChange, transaction, onSubmit, expenseOnly = false }: Props) {
   const { language, t } = useLocale();
   const {
     register,
@@ -88,7 +90,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSubmit }: P
   const submit = handleSubmit(async (values) => {
     const result = schema.parse(values);
     await Promise.resolve();
-    onSubmit(result);
+    onSubmit(expenseOnly ? {...result,type:"expense"} : result);
     onOpenChange(false);
   });
 
@@ -96,7 +98,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSubmit }: P
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{transaction ? t("editTransaction") : t("addTransaction")}</DialogTitle>
+          <DialogTitle>{expenseOnly ? (language === "ar" ? "مصروف شهري جديد" : "New monthly expense") : transaction ? t("editTransaction") : t("addTransaction")}</DialogTitle>
           <DialogDescription>{t("transactionDialogDescription")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} noValidate className="grid gap-5" id="transaction-form">
@@ -117,7 +119,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSubmit }: P
                 name="type"
                 control={control}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select value={field.value} onValueChange={field.onChange} disabled={expenseOnly}>
                     <SelectTrigger className="w-full" aria-label={t("transactionTypeAria")}><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="expense">{t("expenseType")}</SelectItem>

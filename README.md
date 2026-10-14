@@ -14,6 +14,8 @@ Mizan is a bilingual, privacy-first personal finance planner built as a complete
 - English/Arabic localization with RTL support
 - Light and dark themes
 - Accessible semantics, labels, focus states, keyboard controls, and reduced-motion support
+- JSON backup export and validated restore with replacement confirmation
+- Monthly expense rules, with due entries added on app opening and month-end handling
 - Automated behavior tests
 
 ## Routes
@@ -95,3 +97,8 @@ Designed and developed by **[Abdulrahman Hajar](https://github.com/rahman-997)**
 ## License
 
 MIT
+
+### Backup and monthly expenses
+Use the upload icon beside Export to preview and restore a JSON backup (up to 5 MB). Existing exports remain supported. Restore replaces this browser’s entries and budgets only after confirmation and a successful local save. Export first to retain the current data.
+
+The repeat icon manages monthly expense rules. These create local records, never payments. Due entries are generated when the app opens, up to 120 occurrences per rule per opening and 10,000 entries overall. Short months use their last day and the original day is retained for later months. Stopping a rule keeps previous entries.

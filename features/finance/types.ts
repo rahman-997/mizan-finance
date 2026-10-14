@@ -15,9 +15,12 @@ export type Budget = {
   limit: number;
 };
 
+export type RecurringExpense = { id: string; day: number; nextDate: string; draft: TransactionDraft };
+
 export type FinanceData = {
   transactions: Transaction[];
   budgets: Budget[];
+  recurring?: RecurringExpense[];
 };
 
 export type TransactionDraft = Omit<Transaction, "id">;

@@ -5,6 +5,9 @@ import { toast } from "sonner";
 import { seedData } from "./seed-data";
 import type { Budget, FinanceData, Transaction, TransactionDraft } from "./types";
 
+import { parseBackup, materializeRecurring } from "@/lib/finance-backup.mjs";
+const localToday = () => { const d=new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"); };
+
 const STORAGE_KEY = "mizan-finance-v1";
 
 type FinanceContextValue = FinanceData & {
@@ -15,15 +18,12 @@ type FinanceContextValue = FinanceData & {
   deleteTransaction: (id: string) => void;
   updateBudget: (budget: Budget) => void;
   resetDemo: () => void;
+  restoreBackup: (value: unknown) => void;
+  addMonthlyExpense: (draft: TransactionDraft) => void;
+  removeMonthlyExpense: (id: string) => void;
 };
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
-
-const isFinanceData = (value: unknown): value is FinanceData => {
-  if (!value || typeof value !== "object") return false;
-  const data = value as Partial<FinanceData>;
-  return Array.isArray(data.transactions) && Array.isArray(data.budgets);
-};
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<FinanceData>(seedData);
@@ -37,8 +37,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const saved = window.localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed: unknown = JSON.parse(saved);
-          if (!isFinanceData(parsed)) throw new Error("Saved data has an unsupported format.");
-          setData(parsed);
+          setData(materializeRecurring(parseBackup(parsed),localToday()));
         }
       } catch {
         setStorageError("We could not read your saved data. You can safely restore the demo data.");
@@ -101,9 +100,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     toast.success("Demo data restored");
   }, []);
 
+  const restoreBackup = useCallback((value: unknown) => {
+    const restored = materializeRecurring(parseBackup(value), localToday());
+    // Persist before replacing the current view. Failure leaves the current data intact.
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
+    setData(restored); setStorageError(null); setIsLoading(false);
+  }, []);
+  const addMonthlyExpense = useCallback((draft: TransactionDraft) => {
+    const id = globalThis.crypto.randomUUID();
+    const rule = parseBackup({transactions:[],budgets:[],recurring:[{id,day:Number(draft.date.slice(8)),nextDate:draft.date,draft:{...draft,type:"expense"}}]}).recurring![0];
+    setData(current => (current.recurring||[]).length >= 100 ? current : materializeRecurring({...current,recurring:[...(current.recurring||[]),rule]},localToday()));
+  }, []);
+  const removeMonthlyExpense = useCallback((id: string) => {
+    setData(current => ({...current,recurring:(current.recurring||[]).filter(r=>r.id!==id)}));
+  }, []);
+
   const value = useMemo(
-    () => ({ ...data, isLoading, storageError, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo }),
-    [data, isLoading, storageError, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo],
+    () => ({ ...data, isLoading, storageError, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
+    [data, isLoading, storageError, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;
