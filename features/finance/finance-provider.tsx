@@ -5,8 +5,7 @@ import { toast } from "sonner";
 import { seedData } from "./seed-data";
 import type { Budget, FinanceData, Transaction, TransactionDraft } from "./types";
 
-import { parseBackup, materializeRecurring } from "@/lib/finance-backup.mjs";
-const localToday = () => { const d=new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"); };
+import { parseBackup, materializeRecurring, appendTransaction, appendMonthlyExpense, localDate } from "@/lib/finance-backup.mjs";
 
 const STORAGE_KEY = "mizan-finance-v1";
 
@@ -37,7 +36,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const saved = window.localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed: unknown = JSON.parse(saved);
-          setData(materializeRecurring(parseBackup(parsed),localToday()));
+          setData(materializeRecurring(parseBackup(parsed),localDate()));
         }
       } catch {
         setStorageError("We could not read your saved data. You can safely restore the demo data.");
@@ -62,9 +61,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       ...draft,
       id: globalThis.crypto?.randomUUID?.() ?? `tx-${Date.now()}`,
     };
-    setData((current) => ({ ...current, transactions: [transaction, ...current.transactions] }));
+    setData(appendTransaction(data, transaction));
     toast.success("Transaction added");
-  }, []);
+  }, [data]);
 
   const updateTransaction = useCallback((id: string, draft: TransactionDraft) => {
     setData((current) => ({
@@ -101,16 +100,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const restoreBackup = useCallback((value: unknown) => {
-    const restored = materializeRecurring(parseBackup(value), localToday());
+    const restored = materializeRecurring(parseBackup(value), localDate());
     // Persist before replacing the current view. Failure leaves the current data intact.
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
     setData(restored); setStorageError(null); setIsLoading(false);
   }, []);
   const addMonthlyExpense = useCallback((draft: TransactionDraft) => {
-    const id = globalThis.crypto.randomUUID();
-    const rule = parseBackup({transactions:[],budgets:[],recurring:[{id,day:Number(draft.date.slice(8)),nextDate:draft.date,draft:{...draft,type:"expense"}}]}).recurring![0];
-    setData(current => (current.recurring||[]).length >= 100 ? current : materializeRecurring({...current,recurring:[...(current.recurring||[]),rule]},localToday()));
-  }, []);
+    const id = globalThis.crypto?.randomUUID?.() ?? `rule-${Date.now()}`;
+    setData(appendMonthlyExpense(data, {id, day:Number(draft.date.slice(8)), nextDate:draft.date, draft:{...draft,type:"expense"}}, localDate()));
+  }, [data]);
   const removeMonthlyExpense = useCallback((id: string) => {
     setData(current => ({...current,recurring:(current.recurring||[]).filter(r=>r.id!==id)}));
   }, []);
