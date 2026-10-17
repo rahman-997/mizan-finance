@@ -102,3 +102,12 @@ MIT
 Use the upload icon beside Export to preview and restore a JSON backup (up to 5 MB). Existing exports remain supported. Restore replaces this browser’s entries and budgets only after confirmation and a successful local save. Export first to retain the current data.
 
 The repeat icon manages monthly expense rules. These create local records, never payments. Due entries are generated when the app opens, up to 120 occurrences per rule per opening and 10,000 entries overall. Short months use their last day and the original day is retained for later months. Stopping a rule keeps previous entries.
+
+### Browser regression checks
+Run `npm ci`, `npx playwright install chromium`, then `npm run test:browser`.
+The separate Node-based Vinext test server exercises device-local flows without
+Cloudflare bindings; production configuration is unchanged. Tests cover Arabic
+and English restore confirmation/cancellation, storage failure, entry/rule limits,
+and toolbar viewport bounds at 320, 360, 390 and 768 px. These checks supplement
+`npm run ci`; they do not replace visual inspection, keyboard/focus testing,
+200% zoom, or mobile keyboard testing.

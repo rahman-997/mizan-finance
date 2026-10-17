@@ -14,10 +14,11 @@
     "start": "npm run preview",
     "lint": "node scripts/run-tool.mjs eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "node scripts/run-tool.mjs tsc --noEmit",
-    "test": "node --test tests/finance-utils.test.mjs tests/finance-backup.test.mjs",
+    "test": "node --test tests/finance-utils.test.mjs tests/finance-backup.test.mjs tests/finance-safety.test.mjs",
     "test:ui": "node --test tests/ui-components.test.mjs",
     "ci": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:ui",
-    "deploy": "npm run build && node scripts/run-tool.mjs wrangler deploy"
+    "deploy": "npm run build && node scripts/run-tool.mjs wrangler deploy",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
