@@ -127,3 +127,26 @@
 .v16-dashboard .v16-row { min-width:0; }
 [lang="ar"] .v16-dashboard { font-family:"Noto Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif; }
 @media(max-width:380px) { .v16-row { grid-template-columns:34px minmax(0,1fr) minmax(0,95px); gap:8px; } .v16-row-amount { font-size:.68rem; } }
+
+/* Tested 320px regression: allow the top action group to take a second row. */
+@media (max-width:430px) {
+  .app-frame:has(.v16-dashboard) .sidebar-panel {
+    height:auto;
+    min-height:72px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .app-frame:has(.v16-dashboard) .sidebar-actions {
+    width:100%;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+  }
+}
+/* Floating mobile FAB: preserve its accessible text while only displaying the plus glyph. */
+@media (max-width:760px) {
+  .app-frame:has(.v16-dashboard) .page-header .accent-button {
+    color:transparent !important;
+    font-size:0;
+  }
+  .app-frame:has(.v16-dashboard) .page-header .accent-button svg { color:#fff !important; }
+}
