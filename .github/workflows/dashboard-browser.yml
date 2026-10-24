@@ -2,11 +2,6 @@ name: Dashboard browser QA
 
 on:
   pull_request:
-    paths:
-      - "features/dashboard/**"
-      - "tests/dashboard-browser.mjs"
-      - "vite.browser.config.ts"
-      - ".github/workflows/dashboard-browser.yml"
 
 permissions:
   contents: read
@@ -29,10 +24,8 @@ jobs:
           cache: npm
       - name: Install project
         run: npm ci
-      - name: Install browser QA tools (no lockfile or production dependency changes)
-        run: |
-          npm install --no-save --package-lock=false --ignore-scripts @playwright/test@1.56.1
-          npx playwright install --with-deps chromium
+      - name: Install Chromium for pinned Playwright dependency
+        run: npx playwright install --with-deps chromium
       - name: Start isolated browser-test server
         run: |
           npm run dev -- --config vite.browser.config.ts --host 127.0.0.1 --port 4173 > /tmp/mizan-v16-browser.log 2>&1 &
@@ -47,6 +40,8 @@ jobs:
           exit 1
       - name: Verify V16 across mobile, desktop, languages and privacy
         run: node tests/dashboard-browser.mjs
+      - name: Verify backup restore and monthly-expense browser regressions
+        run: CI= npm run test:browser
       - name: Server diagnostics
         if: failure()
         run: tail -n 180 /tmp/mizan-v16-browser.log || true
@@ -55,6 +50,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dashboard-v16-browser-evidence
-          path: artifacts/dashboard-browser/
+          path: |
+            artifacts/dashboard-browser/
+            test-results/
           if-no-files-found: ignore
           retention-days: 7
