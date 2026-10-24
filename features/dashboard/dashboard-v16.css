@@ -18,7 +18,7 @@
 .v16-main-top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .v16-main-top svg { width:20px; height:20px; opacity:.9; }
 .v16-main-label { color:rgba(255,255,255,.83); font-size:.77rem; font-weight:650; }
-.v16-main-balance { margin:16px 0 7px; font-size:clamp(1.65rem,2.35vw,2.55rem); line-height:1.16; letter-spacing:-.045em; font-weight:780; white-space:nowrap; }
+.v16-main-balance { margin:16px 0 7px; font-size:clamp(1.65rem,2.35vw,2.55rem); line-height:1.16; letter-spacing:-.045em; font-weight:780; overflow-wrap:anywhere; }
 .v16-main-foot { display:flex; gap:8px; align-items:center; margin-top:auto; font-size:.71rem; color:rgba(255,255,255,.88); }
 .v16-main-foot span:first-child { display:inline-flex; align-items:center; gap:4px; padding:5px 8px; border-radius:8px; background:rgba(255,255,255,.16); color:white; font-weight:700; }
 .v16-stat-card { display:flex; flex-direction:column; gap:10px; min-width:0; min-height:205px; padding:21px; border:1px solid var(--border); border-radius:19px; background:var(--card); box-shadow:0 5px 22px rgba(18,31,79,.035); }
@@ -29,7 +29,7 @@
 .v16-stat-icon.violet { background:#f1edff; color:#7b62db; }
 .dark .v16-stat-icon { filter:brightness(.84); }
 .v16-stat-label { color:var(--muted-foreground); font-size:.73rem; font-weight:680; }
-.v16-stat-value { display:block; overflow:hidden; margin-top:0; font-size:clamp(1.13rem,1.8vw,1.65rem); font-weight:780; letter-spacing:-.045em; text-overflow:ellipsis; white-space:nowrap; }
+.v16-stat-value { display:block; margin-top:0; font-size:clamp(1.13rem,1.8vw,1.65rem); font-weight:780; letter-spacing:-.045em; overflow-wrap:anywhere; }
 .v16-stat-foot { margin-top:auto; color:var(--muted-foreground); font-size:.69rem; }
 .v16-stat-foot strong { color:#17a078; }
 .v16-dashboard .v16-panel { border:1px solid var(--border); border-radius:20px; padding:22px 23px; background:var(--card); box-shadow:0 6px 26px rgba(18,31,79,.035); min-width:0; }
@@ -64,7 +64,7 @@
 .v16-row-copy { display:grid; gap:4px; min-width:0; }
 .v16-row-copy strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.77rem; }
 .v16-row-copy small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted-foreground); font-size:.65rem; }
-.v16-row-amount { font-size:.77rem; font-weight:750; white-space:nowrap; }
+.v16-row-amount { max-width:100%; font-size:.77rem; font-weight:750; overflow-wrap:anywhere; text-align:end; }
 .v16-row-amount.expense { color:#cc6055 !important; }
 .v16-row-amount.income { color:#168d6a !important; }
 .v16-link { display:inline-flex; align-items:center; gap:3px; white-space:nowrap; font-size:.72rem; font-weight:700; text-decoration:none; color:var(--v16-blue); }
@@ -121,3 +121,9 @@
  .v16-dashboard .v16-center-mask { min-height:225px; }
 }
 @media(prefers-reduced-motion:reduce) { .v16-dashboard * { transition:none !important; } }
+
+/* Keep finance amounts legible rather than silently clipping large values. */
+.v16-dashboard .v16-stat-card, .v16-dashboard .v16-main-card { min-width:0; }
+.v16-dashboard .v16-row { min-width:0; }
+[lang="ar"] .v16-dashboard { font-family:"Noto Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif; }
+@media(max-width:380px) { .v16-row { grid-template-columns:34px minmax(0,1fr) minmax(0,95px); gap:8px; } .v16-row-amount { font-size:.68rem; } }
