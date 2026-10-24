@@ -111,3 +111,29 @@ and English restore confirmation/cancellation, storage failure, entry/rule limit
 and toolbar viewport bounds at 320, 360, 390 and 768 px. These checks supplement
 `npm run ci`; they do not replace visual inspection, keyboard/focus testing,
 200% zoom, or mobile keyboard testing.
+
+
+## Integrated V16 development build
+
+The V16 dashboard and the previous backup/monthly-expense and read-only security work are **integrated only on the `feat/dashboard-v16` draft branch**. They are not part of the `main` branch or the public deployment until separately approved.
+
+- Responsive blue-accented dashboard, with recorded income, expenses, balance and savings rate.
+- A 6/12-month trend selector, categorized spending chart and budget progress.
+- English and Arabic (RTL), dark/light appearance and an on-dashboard amount-hiding control.
+- Validated local JSON backup restoration with an explicit replace confirmation; monthly recurring **records**, not payment instructions.
+- Atomic in-memory finance updates that prevent repeated edits in one React render from dropping entries.
+- Cross-tab write conflict detection: another tab's changes pause this tab's saves instead of silently overwriting them. Export this tab first if necessary, then use **Load latest records**.
+- Read-only Semgrep security scan and Dependabot PRs with no automatic merging.
+
+**Data handling:** Browser localStorage is not encrypted storage. Anyone with access to the same browser profile, its local data or an exported JSON backup may be able to read the finance records. This demo is not connected to banks or payment systems. Keep backups private, and do not depend on a single device as the only copy of important records.
+
+### Verification
+
+```bash
+npm ci
+npm run ci
+npx playwright install chromium
+npm run test:browser
+```
+
+The GitHub browser quality workflow additionally runs `node tests/dashboard-browser.mjs` to check real Chromium rendering at 320, 360, 390, 768 and 1280 pixels with both languages. Its screenshots and results are stored as workflow artifacts. No live deployment is required for these tests.
