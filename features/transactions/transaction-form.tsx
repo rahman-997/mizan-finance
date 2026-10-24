@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { validDate, localDate } from "@/lib/finance-backup.mjs";
 import { Button } from "@/components/ui/button";
 import {
