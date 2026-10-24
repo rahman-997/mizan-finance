@@ -100,6 +100,19 @@ export function AppShell({ view }: { view: AppView }) {
       </aside>
 
       <main className="content-panel">
+        {finance.storageConflict && (
+          <Alert role="status" className="mb-6">
+            <AlertTitle>{language === "ar" ? "تغيّرت البيانات في تبويب آخر" : "Financial data changed in another tab"}</AlertTitle>
+            <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+              <span>{language === "ar"
+                ? "حتى ما تضيع التعديلات، أوقفنا الحفظ هون. صدّر بيانات هذا التبويب أولاً إذا بدك تحتفظ فيها، ثم حمّل أحدث السجلات."
+                : "Saving is paused to prevent overwriting another tab. Export this tab's data first if needed, then load the latest records."}</span>
+              <Button size="sm" variant="outline" onClick={finance.reloadFromStorage}>
+                {language === "ar" ? "تحميل أحدث السجلات" : "Load latest records"}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
         {finance.storageError && (
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>{t("savedUnavailable")}</AlertTitle>

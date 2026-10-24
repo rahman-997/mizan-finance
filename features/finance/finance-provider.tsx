@@ -13,6 +13,8 @@ const STORAGE_KEY = "mizan-finance-v1";
 type FinanceContextValue = FinanceData & {
   isLoading: boolean;
   storageError: string | null;
+  storageConflict: boolean;
+  reloadFromStorage: () => void;
   addTransaction: (draft: TransactionDraft) => void;
   updateTransaction: (id: string, draft: TransactionDraft) => void;
   deleteTransaction: (id: string) => void;
@@ -29,10 +31,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<FinanceData>(seedData);
   // A synchronous journal ensures two updates in the same React render cannot discard one another.
   const journal = useRef(createFinanceJournal<FinanceData>(seedData));
+  const persisted = useRef<string | null>(null);
+  const [storageConflict, setStorageConflict] = useState(false);
   const commit = useCallback((change: (current: FinanceData) => FinanceData) => {
-    const next = journal.current.commit(change); // Validation errors propagate to the form synchronously.
+    if (storageConflict || window.localStorage.getItem(STORAGE_KEY) !== persisted.current) {
+      setStorageConflict(true);
+      throw new Error("EXTERNAL_CHANGE");
+    }
+    const next = journal.current.commit(change); // Limits fail synchronously, before a write.
     setData(next);
-  }, []);
+  }, [storageConflict]);
   const [isLoading, setIsLoading] = useState(true);
   const [storageError, setStorageError] = useState<string | null>(null);
 
@@ -41,6 +49,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       await Promise.resolve();
       try {
         const saved = window.localStorage.getItem(STORAGE_KEY);
+        persisted.current = saved;
         if (saved) {
           const parsed: unknown = JSON.parse(saved);
           const next = materializeRecurring(parseBackup(parsed), localDate());
@@ -57,13 +66,40 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isLoading || storageError) return;
+    if (isLoading || storageError || storageConflict) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      if (window.localStorage.getItem(STORAGE_KEY) !== persisted.current) {
+        queueMicrotask(() => setStorageConflict(true));
+        return;
+      }
+      const saved = JSON.stringify(data);
+      window.localStorage.setItem(STORAGE_KEY, saved);
+      persisted.current = saved;
     } catch {
       queueMicrotask(() => setStorageError("Changes cannot be saved on this device right now."));
     }
-  }, [data, isLoading, storageError]);
+  }, [data, isLoading, storageError, storageConflict]);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.storageArea === window.localStorage && event.key === STORAGE_KEY &&
+          event.newValue !== persisted.current) {
+        setStorageConflict(true);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const reloadFromStorage = useCallback(() => {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    const next = saved ? materializeRecurring(parseBackup(JSON.parse(saved)), localDate()) : seedData;
+    persisted.current = saved;
+    journal.current.replace(next);
+    setData(next);
+    setStorageConflict(false);
+    setStorageError(null);
+  }, []);
 
   const addTransaction = useCallback((draft: TransactionDraft) => {
     const transaction: Transaction = {
@@ -102,8 +138,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     } catch {
       storageAvailable = false;
     }
+    persisted.current = null;
     journal.current.replace(seedData);
     setData(seedData);
+    setStorageConflict(false);
     setStorageError(storageAvailable ? null : "Demo data is restored for this session, but browser storage is unavailable.");
     setIsLoading(false);
     toast.success("Demo data restored");
@@ -112,8 +150,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const restoreBackup = useCallback((value: unknown) => {
     const restored = materializeRecurring(parseBackup(value), localDate());
     // Persist before replacing the current view. Failure leaves the current data intact.
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
+    const serialized = JSON.stringify(restored);
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+    persisted.current = serialized;
     journal.current.replace(restored);
+    setStorageConflict(false);
     setData(restored); setStorageError(null); setIsLoading(false);
   }, []);
   const addMonthlyExpense = useCallback((draft: TransactionDraft) => {
@@ -127,8 +168,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [commit]);
 
   const value = useMemo(
-    () => ({ ...data, isLoading, storageError, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
-    [data, isLoading, storageError, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
+    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
+    [data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;

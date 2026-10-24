@@ -90,3 +90,25 @@ for (const language of ['en','ar']) {
     });
   }
 }
+
+test('concurrent tabs warn instead of silently overwriting finance data', async ({page,context}) => {
+  await page.goto('/');
+  await expect(page.locator('.v16-dashboard')).toBeVisible();
+  await page.waitForFunction(() => Boolean(localStorage.getItem('mizan-finance-v1')));
+  const other = await context.newPage();
+  await other.goto('/');
+  await expect(other.locator('.v16-dashboard')).toBeVisible();
+  await page.locator('.page-header button').click();
+  const dialog = page.getByRole('dialog');
+  await dialog.locator('#transaction-title').fill('Second tab protected');
+  await dialog.locator('#transaction-amount').fill('25');
+  await dialog.locator('button[type=submit]').click();
+  await expect(dialog).toHaveCount(0);
+  await expect(other.getByText('Financial data changed in another tab')).toBeVisible();
+  const before = await other.evaluate(() => JSON.parse(localStorage.getItem('mizan-finance-v1')).transactions.length);
+  await other.getByRole('button',{name:'Load latest records'}).click();
+  await expect(other.getByText('Second tab protected')).toBeVisible();
+  const after = await other.evaluate(() => JSON.parse(localStorage.getItem('mizan-finance-v1')).transactions.length);
+  expect(after).toBe(before);
+  await other.close();
+});
