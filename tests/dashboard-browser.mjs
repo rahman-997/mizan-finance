@@ -40,7 +40,12 @@ try {
         const measures = await page.evaluate(() => {
           const boxes = [".v16-toolbar", ".v16-metrics", ".v16-analysis-grid", ".v16-bottom-grid"]
             .map(selector => ({selector, box: document.querySelector(selector)?.getBoundingClientRect().toJSON()}));
-          return { scrollWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth, boxes };
+          const overflowNodes = Array.from(document.querySelectorAll("body *")).flatMap((node) => {
+            const bounds = node.getBoundingClientRect();
+            if (!bounds.width || !bounds.height || (bounds.right <= innerWidth + 1 && bounds.left >= -1)) return [];
+            return [{tag:node.tagName,cls:typeof node.className === "string" ? node.className.slice(0,90) : "",left:Math.round(bounds.left),right:Math.round(bounds.right)}];
+          }).slice(0,12);
+          return { scrollWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth, boxes, overflowNodes };
         });
         assert.ok(measures.scrollWidth <= width + 1,
           language + " " + width + " horizontal overflow: " + JSON.stringify(measures));
@@ -69,7 +74,7 @@ try {
         await page.locator(".v16-plot svg").waitFor({state:"visible",timeout:15000});
         assert.ok((await page.locator(".v16-main-balance").innerText()).trim() !== "••••••", "Privacy toggle reveals figures");
 
-        if ((width === 390 || width === 1280)) {
+        if ((width === 320 || width === 390 || width === 1280)) {
           await page.screenshot({path: out + "/" + language + "-" + width + "-" + theme + ".png",fullPage:true,animations:"disabled"});
         }
         // Use the actual navigation destination without changing financial data.
