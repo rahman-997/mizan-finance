@@ -105,10 +105,10 @@ test('concurrent tabs warn instead of silently overwriting finance data', async 
   await dialog.locator('button[type=submit]').click();
   await expect(dialog).toHaveCount(0);
   await expect(other.getByText('Financial data changed in another tab')).toBeVisible();
-  const before = await other.evaluate(() => JSON.parse(localStorage.getItem('mizan-finance-v1')).transactions.length);
+  const before = await other.evaluate(() => JSON.parse(localStorage.getItem('mizan-finance-v1')!).transactions.length);
   await other.getByRole('button',{name:'Load latest records'}).click();
   await expect(other.getByText('Second tab protected')).toBeVisible();
-  const after = await other.evaluate(() => JSON.parse(localStorage.getItem('mizan-finance-v1')).transactions.length);
+  const after = await other.evaluate(() => JSON.parse(localStorage.getItem('mizan-finance-v1')!).transactions.length);
   expect(after).toBe(before);
   await other.close();
 });
