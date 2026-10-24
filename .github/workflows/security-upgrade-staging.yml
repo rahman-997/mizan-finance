@@ -1,0 +1,67 @@
+name: One-time security upgrade evaluation
+
+on:
+  push:
+    branches: ["security/mizan-advisory-fixes"]
+    paths: [".github/workflows/security-upgrade-staging.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade-and-validate:
+    if: github.ref == 'refs/heads/security/mizan-advisory-fixes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout isolated security branch without persistent credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: npm audited toolchain
+        run: npm install --global npm@11.12.1
+      - name: Resolve advisory-fixed versions without executing package scripts
+        env:
+          npm_config_min_release_age: "0"
+        run: |
+          npm pkg set "dependencies.next=16.4.3" "dependencies.react-server-dom-webpack=19.3.1" "devDependencies.vite=8.3.5" "devDependencies.@cloudflare/vite-plugin=1.65.0"
+          npm install --package-lock-only --ignore-scripts --no-audit
+      - name: Install and run quality gate
+        env:
+          npm_config_min_release_age: "0"
+        run: |
+          npm ci
+          npm run ci
+      - name: Dependency audit after upgrades
+        if: success()
+        run: npm audit --json > security-audit-after.json || true
+      - name: Save validated dependency manifest and audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: security-upgrade-evidence
+          path: |
+            package.json
+            package-lock.json
+            security-audit-after.json
+          retention-days: 7
+      - name: Commit only the tested manifest changes to isolated branch
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(deps): stage advisory-fixed core packages after CI"
+      - name: Push only to isolated security branch
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          HEADER=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:refs/heads/security/mizan-advisory-fixes
