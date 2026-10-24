@@ -150,3 +150,21 @@
   }
   .app-frame:has(.v16-dashboard) .page-header .accent-button svg { color:#fff !important; }
 }
+
+/* Tiny-phone finance figures: prevent RTL currency suffixes splitting across lines. */
+@media (max-width:350px) {
+  .v16-dashboard .v16-metrics { grid-template-columns:minmax(0,1fr); }
+  .v16-dashboard .v16-main-card { grid-column:auto; }
+  .v16-dashboard .v16-stat-card {
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    align-content:center;
+    min-height:108px;
+    gap:3px 13px;
+  }
+  .v16-dashboard .v16-stat-icon { grid-row:1 / span 3; align-self:center; }
+  .v16-dashboard .v16-stat-value { font-size:1.3rem; white-space:nowrap; }
+  .v16-dashboard .v16-stat-foot { margin-top:0; }
+}
+.v16-dashboard .v16-row-copy strong { white-space:normal; overflow-wrap:anywhere; }
