@@ -10,6 +10,19 @@ import { createFinanceJournal } from "@/lib/finance-journal.mjs";
 
 const STORAGE_KEY = "mizan-finance-v1";
 
+// Older backups omit optional fields. Treat semantically identical saves as the
+// same snapshot so opening another tab never produces a false write conflict.
+function equivalentSnapshots(left: string | null, right: string | null) {
+  if (left === right) return true;
+  if (!left || !right) return false;
+  try {
+    return JSON.stringify(parseBackup(JSON.parse(left))) ===
+      JSON.stringify(parseBackup(JSON.parse(right)));
+  } catch {
+    return false;
+  }
+}
+
 type FinanceContextValue = FinanceData & {
   isLoading: boolean;
   storageError: string | null;
@@ -34,10 +47,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const persisted = useRef<string | null>(null);
   const [storageConflict, setStorageConflict] = useState(false);
   const commit = useCallback((change: (current: FinanceData) => FinanceData) => {
-    if (storageConflict || window.localStorage.getItem(STORAGE_KEY) !== persisted.current) {
+    const disk = window.localStorage.getItem(STORAGE_KEY);
+    if (storageConflict || !equivalentSnapshots(disk, persisted.current)) {
       setStorageConflict(true);
       throw new Error("EXTERNAL_CHANGE");
     }
+    persisted.current = disk;
     const next = journal.current.commit(change); // Limits fail synchronously, before a write.
     setData(next);
   }, [storageConflict]);
@@ -68,11 +83,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading || storageError || storageConflict) return;
     try {
-      if (window.localStorage.getItem(STORAGE_KEY) !== persisted.current) {
+      const disk = window.localStorage.getItem(STORAGE_KEY);
+      if (!equivalentSnapshots(disk, persisted.current)) {
         queueMicrotask(() => setStorageConflict(true));
         return;
       }
+      persisted.current = disk;
       const saved = JSON.stringify(data);
+      if (equivalentSnapshots(disk, saved)) return;
       window.localStorage.setItem(STORAGE_KEY, saved);
       persisted.current = saved;
     } catch {
@@ -82,9 +100,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.storageArea === window.localStorage && event.key === STORAGE_KEY &&
-          event.newValue !== persisted.current) {
-        setStorageConflict(true);
+      if (event.storageArea === window.localStorage && event.key === STORAGE_KEY) {
+        if (equivalentSnapshots(event.newValue, persisted.current)) {
+          persisted.current = event.newValue;
+        } else {
+          setStorageConflict(true);
+        }
       }
     };
     window.addEventListener("storage", onStorage);
