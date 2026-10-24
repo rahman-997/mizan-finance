@@ -95,7 +95,14 @@ export function DashboardView({ onAdd }: { onAdd: () => void }) {
   const monthItems = currentMonthTransactions(transactions);
   const monthSummary = calculateSummary(monthItems);
   const totalSummary = calculateSummary(transactions);
-  const chartData = monthlySeries(transactions, months);
+  // Use Gregorian month names in the selected UI language. Keep the existing financial totals unchanged.
+  const monthFormatter = new Intl.DateTimeFormat(language === "ar" ? "ar-EG" : "en-US", { month: "short", calendar: "gregory" });
+  const chartData = monthlySeries(transactions, months).map((point, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - (months - 1 - index));
+    return { ...point, month: monthFormatter.format(date) };
+  });
   const spend = spendingByCategory(monthItems);
   const otherAmount = spend.slice(4).reduce((total, item) => total + item.amount, 0);
   const distribution = spend.slice(0, 4).concat(otherAmount > 0 ? [{ category: "Other", amount: otherAmount }] : []);
@@ -177,7 +184,7 @@ export function DashboardView({ onAdd }: { onAdd: () => void }) {
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="var(--grid-line)" strokeDasharray="4 5" vertical={false} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+                  <XAxis dataKey="month" interval={months === 12 ? 2 : 0} axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ borderRadius: 12, background: "var(--popover)", border: "1px solid var(--border)", color: "var(--popover-foreground)" }}
@@ -274,17 +281,17 @@ export function DashboardView({ onAdd }: { onAdd: () => void }) {
                   <div className="v16-budget-line" key={budget.category}>
                     <div className="v16-budget-line-top">
                       <span>{categoryLabels[budget.category]?.[language] ?? budget.category}</span>
-                      <strong className={percent > 100 ? "v16-over" : ""} dir="ltr">
+                      <strong className={!privateMode && percent > 100 ? "v16-over" : ""} dir="ltr">
                         {privateMode ? "••••••" : formatMoney(spent, language) + " / " + formatMoney(budget.limit, language)}
                       </strong>
                     </div>
                     <div
-                      className={"v16-track" + (percent > 100 ? " over" : "")}
-                      role="progressbar"
-                      aria-label={categoryLabels[budget.category]?.[language] ?? budget.category}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={Math.min(Math.max(percent, 0), 100)}
+                      className={"v16-track" + (!privateMode && percent > 100 ? " over" : "")}
+                      role={privateMode ? "img" : "progressbar"}
+                      aria-label={privateMode ? c.privacyPlaceholder : (categoryLabels[budget.category]?.[language] ?? budget.category)}
+                      aria-valuemin={privateMode ? undefined : 0}
+                      aria-valuemax={privateMode ? undefined : 100}
+                      aria-valuenow={privateMode ? undefined : Math.min(Math.max(percent, 0), 100)}
                     >
                       <div style={{ width: (privateMode ? 0 : Math.min(Math.max(percent, 0), 100)) + "%" }} />
                     </div>
