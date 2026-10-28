@@ -62,3 +62,28 @@ test("production build hydrates and edits after a cold offline restart", async (
   await expect(page.locator(".transaction-row").filter({ hasText: "Cold offline purchase" })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("production PWA reopens in Arabic dark mode on a mobile-width offline screen", async ({ page, context }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    localStorage.setItem("mizan-language", "ar");
+    localStorage.setItem("theme", "dark");
+  });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".v16-dashboard")).toBeVisible();
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator(".v16-dashboard")).toBeVisible();
+  await page.waitForFunction(() => document.documentElement.dir === "rtl" && document.documentElement.classList.contains("dark"));
+  await context.setOffline(true);
+  const response = await page.reload({ waitUntil: "domcontentloaded" });
+  expect(response?.status()).toBe(200);
+  await expect(page.locator(".v16-dashboard")).toBeVisible({ timeout: 20_000 });
+  await page.waitForFunction(() => document.documentElement.dir === "rtl" && document.documentElement.classList.contains("dark"));
+  await page.locator(".v16-eye").click();
+  await expect(page.locator(".v16-main-balance")).toHaveText("••••••");
+  const width = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(width).toBeLessThanOrEqual(391);
+});
