@@ -17,7 +17,10 @@ export type Budget = {
 
 export type RecurringExpense = { id: string; day: number; nextDate: string; draft: TransactionDraft };
 
+export type SavingsGoal = { id: string; title: string; target: number; saved: number };
+
 export type FinanceData = {
+  goals?: SavingsGoal[];
   transactions: Transaction[];
   budgets: Budget[];
   recurring?: RecurringExpense[];
