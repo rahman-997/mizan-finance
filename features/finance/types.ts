@@ -19,7 +19,10 @@ export type RecurringExpense = { id: string; day: number; nextDate: string; draf
 
 export type SavingsGoal = { id: string; title: string; target: number; saved: number };
 
+export type Holding = { id: string; label: string; kind: "asset" | "liability"; value: number };
+
 export type FinanceData = {
+  holdings?: Holding[];
   goals?: SavingsGoal[];
   transactions: Transaction[];
   budgets: Budget[];
