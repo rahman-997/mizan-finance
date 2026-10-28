@@ -1,0 +1,60 @@
+name: Production PWA offline QA
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-pwa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cold-offline-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
+      - name: Node runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build production bundle
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start local production preview (never deploys)
+        run: |
+          node scripts/run-tool.mjs vite preview --host 127.0.0.1 --port 4183 --strictPort > /tmp/mizan-production-preview.log 2>&1 &
+          echo $! > /tmp/mizan-production-preview.pid
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:4183/ >/dev/null; then
+              exit 0
+            fi
+            if ! kill -0 "$(cat /tmp/mizan-production-preview.pid)" 2>/dev/null; then
+              cat /tmp/mizan-production-preview.log
+              exit 1
+            fi
+            sleep 2
+          done
+          cat /tmp/mizan-production-preview.log
+          exit 1
+      - name: Verify real cold offline production hydration and edits
+        run: node scripts/run-tool.mjs playwright test --config playwright.production.config.ts
+      - name: Production preview diagnostics
+        if: failure()
+        run: tail -n 200 /tmp/mizan-production-preview.log || true
+      - name: Save Chromium failure trace
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: production-pwa-browser-evidence
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
