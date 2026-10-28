@@ -253,3 +253,34 @@ test("calendar and recurring expense manager cold-reopen without network after a
   await page.getByRole("button",{name:"Previous month"}).click();
   await expect(page.getByRole("button",{name:"Today"})).toBeVisible();
 });
+
+
+test("holdings and planner cold-reopen and remain interactive in production offline",async ({page,context})=>{
+  test.setTimeout(120_000);
+  await page.goto("/holdings");
+  await expect(page.getByRole("heading",{name:"Know what you own and owe"})).toBeVisible();
+  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
+  await page.waitForFunction(()=>navigator.serviceWorker.controller!==null,null,{timeout:30000});
+  await page.reload();
+  await expect(page.getByRole("button",{name:"Add item"})).toBeVisible();
+  await page.goto("/planner");
+  await expect(page.getByRole("heading",{name:"Explore your monthly options"})).toBeVisible();
+  await page.reload();
+  await expect(page.locator("#planner-income")).toBeVisible();
+  await context.setOffline(true);
+  const plannerResponse=await page.reload({waitUntil:"domcontentloaded"});
+  expect(plannerResponse?.status()).toBe(200);
+  await page.locator("#planner-income").fill("50");
+  await expect(page.getByText("Difference from recorded")).toBeVisible();
+  const holdingsResponse=await page.goto("/holdings",{waitUntil:"domcontentloaded"});
+  expect(holdingsResponse?.status()).toBe(200);
+  await page.getByRole("button",{name:"Add item"}).click();
+  const dialog=page.getByRole("dialog");
+  await dialog.locator("#holding-label").fill("Offline bicycle");
+  await dialog.locator("#holding-value").fill("210");
+  await dialog.getByRole("button",{name:"Save item"}).click();
+  await expect(dialog).toHaveCount(0);
+  const second=await page.reload({waitUntil:"domcontentloaded"});
+  expect(second?.status()).toBe(200);
+  await expect(page.getByRole("heading",{name:"Offline bicycle"})).toBeVisible();
+});
