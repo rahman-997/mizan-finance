@@ -137,3 +137,11 @@ npm run test:browser
 ```
 
 The GitHub browser quality workflow additionally runs `node tests/dashboard-browser.mjs` to check real Chromium rendering at 320, 360, 390, 768 and 1280 pixels with both languages. Its screenshots and results are stored as workflow artifacts. No live deployment is required for these tests.
+
+## PWA reliability and dependency gate (V16 draft)
+
+The development branch adds a safer service worker and standard PNG icons (192px and 512px) for Android installation prompts. Navigations to the four known pages prefer a fresh network response and use the last cached page while offline. Static scripts, CSS, fonts and images are cached only from same-origin asset paths. API requests, authenticated requests, query-string URLs and private/no-store responses are not persisted by the worker. Missing JavaScript files now fail as offline assets rather than receiving the dashboard HTML.
+
+**Offline limits:** The install precaches the four route documents and the manifest/favicon. JavaScript and other assets may require an online visit **after the service worker controls the page** to populate cache. First-launch offline use, complete Android device installation, browser updates and offline transaction editing have **not yet been verified end-to-end on a physical device**. Avoid relying on offline mode until that verification is complete.
+
+Run service worker regression tests via `npm test`. GitHub CI runs `npm audit --omit=dev --audit-level=moderate` as a blocking check for production dependencies. Full `npm audit` is captured as an artifact for review and may still report development/build-tool advisories. The October 28, 2026 audit counted **14 advisories (6 high, 8 moderate, none critical)**; the production-dependency check passed, but the full audit was **not** clean. No automatic major-version fixes or production deployment are performed.
