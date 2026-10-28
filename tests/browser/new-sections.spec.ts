@@ -31,7 +31,7 @@ for (const language of ["en", "ar"] as const) {
       page.getByRole("button", { name: ar ? "تصدير البيانات" : "Export data" }).click(),
     ]);
     const saved = JSON.parse(await readFile(await file.path(), "utf8"));
-    expect(saved.version).toBe(3);
+    expect(saved.version).toBe(4);
     expect(saved.goals.find((g: { title: string }) => g.title === "New bicycle")?.saved).toBe(200);
 
     await page.getByRole("button", { name: ar ? "حذف الهدف: New bicycle" : "Delete goal: New bicycle" }).click();
