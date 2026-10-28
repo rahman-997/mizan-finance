@@ -12,7 +12,8 @@ export function ExportDataButton() {
   const exportData = () => {
     const payload = {
       app: "Mizan Finance",
-      version: 2,
+      version: 3,
+      goals: goals || [],
       recurring: recurring || [],
       exportedBy: "Abdulrahman Hajar",
       exportedAt: new Date().toISOString(),
