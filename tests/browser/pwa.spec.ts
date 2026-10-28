@@ -24,8 +24,8 @@ test("PWA install assets and cached navigation work with Chromium offline", asyn
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
 
   const cachedShell = await page.evaluate(async () => {
-    const cache = await caches.open("mizan-static-v3");
-    const paths = ["/", "/transactions", "/budgets", "/insights", "/goals", "/reports"];
+    const cache = await caches.open("mizan-static-v4");
+    const paths = ["/", "/transactions", "/budgets", "/insights", "/goals", "/reports", "/recurring", "/calendar"];
     return Promise.all(paths.map(async path => {
       const hit = await cache.match(path);
       return { path, status: hit?.status, contentType: hit?.headers.get("content-type") };
