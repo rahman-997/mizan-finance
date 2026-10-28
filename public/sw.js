@@ -53,7 +53,10 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       } catch {
-        return (await (await caches.open(CACHE_NAME)).match(request)) || new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
+        // Framework HTML may vary by RSC and Accept headers. Only known
+        // navigation pages are eligible here, so ignore those variants when offline.
+        return (await (await caches.open(CACHE_NAME)).match(normalizePage(url.pathname), { ignoreVary: true }))
+          || new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
       }
     })());
     return;
