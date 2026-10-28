@@ -12,6 +12,8 @@ import {
   Plus,
   Sun,
   Target,
+  Flag,
+  FileBarChart2,
   WalletCards,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -26,22 +28,28 @@ import { DashboardView } from "@/features/dashboard/dashboard-view";
 import { TransactionsView } from "@/features/transactions/transactions-view";
 import { BudgetsView } from "@/features/budgets/budgets-view";
 import { InsightsView } from "@/features/insights/insights-view";
+import { GoalsView } from "@/features/goals/goals-view";
+import { ReportsView } from "@/features/reports/reports-view";
 
-export type AppView = "dashboard" | "transactions" | "budgets" | "insights";
+export type AppView = "dashboard" | "transactions" | "budgets" | "insights" | "goals" | "reports";
 
 const navigation = [
   { href: "/", key: "dashboard" as const, icon: LayoutDashboard },
   { href: "/transactions", key: "transactions" as const, icon: ArrowDownUp },
   { href: "/budgets", key: "budgets" as const, icon: Target },
   { href: "/insights", key: "insights" as const, icon: BarChart3 },
+  { href: "/goals", key: "goals" as const, icon: Flag },
+  { href: "/reports", key: "reports" as const, icon: FileBarChart2 },
 ];
 
-const pageCopyKeys: Record<AppView, { eyebrow: "dashboardEyebrow" | "transactionsEyebrow" | "budgetsEyebrow" | "insightsEyebrow"; title: "dashboardTitle" | "transactionsTitle" | "budgetsTitle" | "insightsTitle"; intro: "dashboardIntro" | "transactionsIntro" | "budgetsIntro" | "insightsIntro" }> = {
+const pageCopyKeys = {
   dashboard: { eyebrow: "dashboardEyebrow", title: "dashboardTitle", intro: "dashboardIntro" },
   transactions: { eyebrow: "transactionsEyebrow", title: "transactionsTitle", intro: "transactionsIntro" },
   budgets: { eyebrow: "budgetsEyebrow", title: "budgetsTitle", intro: "budgetsIntro" },
   insights: { eyebrow: "insightsEyebrow", title: "insightsTitle", intro: "insightsIntro" },
-};
+  goals: { eyebrow: "goalsEyebrow", title: "goalsTitle", intro: "goalsIntro" },
+  reports: { eyebrow: "reportsEyebrow", title: "reportsTitle", intro: "reportsIntro" },
+} as const satisfies Record<AppView, { eyebrow: string; title: string; intro: string }>;
 
 function LoadingState({ label }: { label: string }) {
   return (
@@ -135,6 +143,8 @@ export function AppShell({ view }: { view: AppView }) {
         {view === "transactions" && <TransactionsView onAdd={() => setNewOpen(true)} />}
         {view === "budgets" && <BudgetsView />}
         {view === "insights" && <InsightsView />}
+        {view === "goals" && <GoalsView />}
+        {view === "reports" && <ReportsView />}
 
         <footer className="site-footer"><span>Mizan Finance</span><span>{t("footerText")}</span></footer>
       </main>
