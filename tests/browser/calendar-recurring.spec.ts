@@ -47,7 +47,7 @@ test("mobile More menu exposes calendar and recurring routes without overflow",a
   await page.setViewportSize({width:320,height:740});
   await page.goto("/");
   await page.getByRole("button",{name:"More sections"}).click();
-  await expect(page.locator(".mobile-more-menu a")).toHaveCount(4);
+  await expect(page.locator(".mobile-more-menu a")).toHaveCount(6);
   await page.locator(".mobile-more-menu a[href='/calendar']").click();
   await expect(page.getByRole("heading",{name:"Your financial calendar"})).toBeVisible();
   await page.getByRole("button",{name:"More sections"}).click();
