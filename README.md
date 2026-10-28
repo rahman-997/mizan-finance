@@ -145,3 +145,15 @@ The development branch adds a safer service worker and standard PNG icons (192px
 **Offline limits:** The install precaches the four route documents and the manifest/favicon. JavaScript and other assets may require an online visit **after the service worker controls the page** to populate cache. First-launch offline use, complete Android device installation, browser updates and offline transaction editing have **not yet been verified end-to-end on a physical device**. Avoid relying on offline mode until that verification is complete.
 
 Run service worker regression tests via `npm test`. GitHub CI runs `npm audit --omit=dev --audit-level=moderate` as a blocking check for production dependencies. Full `npm audit` is captured as an artifact for review and may still report development/build-tool advisories. The October 28, 2026 audit counted **14 advisories (6 high, 8 moderate, none critical)**; the production-dependency check passed, but the full audit was **not** clean. No automatic major-version fixes or production deployment are performed.
+
+
+## V16 draft: savings goals and monthly reports
+
+Two additional bilingual sections are available on the **development branch only**: `/goals` and `/reports`. Both appear in the desktop sidebar and six-item responsive mobile navigation. Neither section contacts a bank or initiates payments.
+
+- **Savings goals:** Create up to 20 manually tracked targets, edit the amount you've set aside, review progress, or delete a goal with confirmation. Progress is a *manual planning figure*, not a real segregated account, and it never changes transaction balances. Goal updates use the existing multi-tab conflict protection.
+- **Monthly reports:** Compare income, spending and net cash flow across the last 6 or 12 calendar months, with an accessible data table and aggregated CSV export. The report is based solely on recorded transactions. It is historical, not a financial forecast.
+- **Backup compatibility:** JSON export version 3 includes goals. Restores accept versions 1, 2 and 3, including old backups without goals. New goal data is validated, constrained in size and shown in the restore preview before confirming replacement.
+- **Offline behavior:** The service worker uses a newly versioned cache and pre-caches the new routes. As with other Mizan screens, assets should be warmed while connected before relying on offline reload. Chromium production tests cover the cold-offline navigation after warming the routes.
+
+Please do not merge to `main` or deploy without explicit approval. Physical Android installation and accessibility testing on a real device remain separate release checks.
