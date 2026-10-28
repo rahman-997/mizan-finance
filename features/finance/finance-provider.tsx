@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { seedData } from "./seed-data";
-import type { Budget, FinanceData, SavingsGoal, Transaction, TransactionDraft } from "./types";
+import type { Budget, FinanceData, SavingsGoal, Holding, Transaction, TransactionDraft } from "./types";
+import { addHolding, editHolding, removeHolding } from "@/lib/finance-holdings.mjs";
 import { appendGoal, changeGoal, deleteGoal } from "@/lib/goal-utils.mjs";
 
 import { parseBackup, materializeRecurring, appendTransaction, appendMonthlyExpense, localDate } from "@/lib/finance-backup.mjs";
@@ -36,6 +37,9 @@ type FinanceContextValue = FinanceData & {
   addGoal: (draft: Omit<SavingsGoal, "id">) => void;
   editGoal: (id: string, draft: Omit<SavingsGoal, "id">) => void;
   removeGoal: (id: string) => void;
+  addHolding: (draft: Omit<Holding, "id">) => void;
+  editHolding: (id: string, draft: Omit<Holding, "id">) => void;
+  removeHolding: (id: string) => void;
   resetDemo: () => void;
   restoreBackup: (value: unknown) => void;
   addMonthlyExpense: (draft: TransactionDraft) => void;
@@ -167,6 +171,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     commit((current) => deleteGoal(current, id));
   }, [commit]);
 
+  const addHoldingRecord = useCallback((draft: Omit<Holding, "id">) => {
+    const item: Holding = { ...draft, id: globalThis.crypto?.randomUUID?.() ?? `holding-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    commit(current => addHolding(current, item));
+  }, [commit]);
+  const editHoldingRecord = useCallback((id: string, draft: Omit<Holding, "id">) => {
+    commit(current => editHolding(current, id, draft));
+  }, [commit]);
+  const removeHoldingRecord = useCallback((id: string) => {
+    commit(current => removeHolding(current, id));
+  }, [commit]);
+
   const resetDemo = useCallback(() => {
     let storageAvailable = true;
     try {
@@ -211,8 +226,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [commit]);
 
   const value = useMemo(
-    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
-    [data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
+    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, addHolding: addHoldingRecord, editHolding: editHoldingRecord, removeHolding: removeHoldingRecord, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
+    [data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, addHoldingRecord, editHoldingRecord, removeHoldingRecord, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;
