@@ -19,7 +19,11 @@ function fakeWorker(onlineFetch = async () => { throw new TypeError("Offline"); 
           items.set(key(url), new Response(url, { headers: { "Content-Type": url.endsWith(".svg") ? "image/svg+xml" : "text/html" } }));
       },
       async put(request, response) { items.set(key(request), response); },
-      async match(request) { return items.get(key(request)); },
+      async match(request, options = {}) {
+        const response = items.get(key(request));
+        if (response?.headers.has("vary") && !options.ignoreVary && typeof request !== "string") return undefined;
+        return response;
+      },
     };
   };
   const caches = {
@@ -133,4 +137,11 @@ test("PWA manifest advertises installable PNG icons", async () => {
   assert.ok(icons.some(icon => icon.sizes.includes("192x192")));
   assert.ok(icons.some(icon => icon.sizes.includes("512x512")));
   assert.ok(icons.some(icon => icon.purpose.includes("maskable")));
+});
+
+test("offline navigation handles Vinext Vary headers on cached HTML", async () => {
+  const sw = fakeWorker();
+  await sw.cached("mizan-static-v2").put("/budgets", new Response("cached html", { headers: { vary: "Accept, RSC, Next-Router-State-Tree", "content-type": "text/html" } }));
+  const req = sw.makeRequest("/budgets", { mode: "navigate", headers: { Accept: "text/html" } });
+  assert.equal(await (await sw.run("fetch", req)).text(), "cached html");
 });
