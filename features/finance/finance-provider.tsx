@@ -156,6 +156,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     toast.success("Budget updated");
   }, [commit]);
 
+  const addGoal = useCallback((draft: Omit<SavingsGoal, "id">) => {
+    const goal: SavingsGoal = { ...draft, id: globalThis.crypto?.randomUUID?.() ?? `goal-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    commit((current) => appendGoal(current, goal));
+  }, [commit]);
+  const editGoal = useCallback((id: string, draft: Omit<SavingsGoal, "id">) => {
+    commit((current) => changeGoal(current, id, draft));
+  }, [commit]);
+  const removeGoal = useCallback((id: string) => {
+    commit((current) => deleteGoal(current, id));
+  }, [commit]);
+
   const resetDemo = useCallback(() => {
     let storageAvailable = true;
     try {
