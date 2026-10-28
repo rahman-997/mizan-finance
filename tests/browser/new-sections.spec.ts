@@ -62,15 +62,17 @@ for (const language of ["en", "ar"] as const) {
   });
 }
 
-test("six-section mobile navigation remains usable at 320px", async ({ page }) => {
+test("eight-section navigation with mobile More menu remains usable at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto("/");
-  await expect(page.locator(".mobile-nav a")).toHaveCount(6);
-  const links = page.locator(".mobile-nav a");
+  await expect(page.locator(".mobile-nav > a")).toHaveCount(4);
+  const links = page.locator(".mobile-nav > a");
   for (const item of await links.all()) await expect(item).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
   await page.locator(".mobile-nav a[href='/goals']").click();
   await expect(page.getByRole("heading", { name: "Save for what matters" })).toBeVisible();
-  await page.locator(".mobile-nav a[href='/reports']").click();
+  await page.getByRole("button", { name: "More sections" }).click();
+  await expect(page.locator(".mobile-more-menu a")).toHaveCount(4);
+  await page.locator(".mobile-more-menu a[href='/reports']").click();
   await expect(page.getByRole("heading", { name: "Your money in perspective" })).toBeVisible();
 });
