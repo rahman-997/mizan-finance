@@ -141,7 +141,7 @@ test("PWA manifest advertises installable PNG icons", async () => {
 
 test("offline navigation handles Vinext Vary headers on cached HTML", async () => {
   const sw = fakeWorker();
-  await sw.cached("mizan-static-v4").put("/budgets", new Response("cached html", { headers: { vary: "Accept, RSC, Next-Router-State-Tree", "content-type": "text/html" } }));
+  await sw.cached("mizan-static-v5").put("/budgets", new Response("cached html", { headers: { vary: "Accept, RSC, Next-Router-State-Tree", "content-type": "text/html" } }));
   const req = sw.makeRequest("/budgets", { mode: "navigate", headers: { Accept: "text/html" } });
   assert.equal(await (await sw.run("fetch", req)).text(), "cached html");
 });
