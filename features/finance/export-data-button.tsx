@@ -6,7 +6,7 @@ import { useFinance } from "./finance-provider";
 import { useLocale } from "./locale-provider";
 
 export function ExportDataButton() {
-  const { transactions, budgets, recurring } = useFinance();
+  const { transactions, budgets, recurring, goals } = useFinance();
   const { language } = useLocale();
 
   const exportData = () => {
