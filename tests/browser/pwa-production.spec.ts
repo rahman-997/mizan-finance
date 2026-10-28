@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+import { devices } from "@playwright/test";
 
 test("production build hydrates and edits after a cold offline restart", async ({ page, context }) => {
   test.setTimeout(120_000);
@@ -86,4 +88,112 @@ test("production PWA reopens in Arabic dark mode on a mobile-width offline scree
   await expect(page.locator(".v16-main-balance")).toHaveText("••••••");
   const width = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(width).toBeLessThanOrEqual(391);
+});
+
+
+test("offline backup export and confirmed restore preserve original finance records", async ({ page, context }) => {
+  test.setTimeout(120_000);
+  await page.goto("/transactions");
+  await expect(page.locator(".transaction-list")).toBeVisible();
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
+  await page.reload();
+  await expect(page.locator(".transaction-list")).toBeVisible();
+
+  await context.setOffline(true);
+  const reloaded = await page.reload({ waitUntil: "domcontentloaded" });
+  expect(reloaded?.status()).toBe(200);
+  await expect(page.locator(".transaction-list")).toBeVisible();
+
+  await page.locator(".page-header button").click();
+  const add = page.getByRole("dialog");
+  await add.locator("#transaction-title").fill("Original offline entry");
+  await add.locator("#transaction-amount").fill("42.50");
+  await add.locator('button[type="submit"]').click();
+  await expect(add).toHaveCount(0);
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Export data" }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^mizan-finance-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const exported = JSON.parse(await readFile(await download.path(), "utf8"));
+  expect(exported.app).toBe("Mizan Finance");
+  expect(exported.transactions.some((item: { title: string; amount: number }) =>
+    item.title === "Original offline entry" && item.amount === 42.5)).toBe(true);
+
+  await page.locator(".page-header button").click();
+  const second = page.getByRole("dialog");
+  await second.locator("#transaction-title").fill("Discard after backup");
+  await second.locator("#transaction-amount").fill("9.75");
+  await second.locator('button[type="submit"]').click();
+  await expect(second).toHaveCount(0);
+  await expect(page.locator(".transaction-row").filter({ hasText: "Discard after backup" })).toBeVisible();
+
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "mizan-restore.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(exported)),
+  });
+  const confirm = page.getByRole("dialog");
+  await expect(confirm).toContainText("Restore this backup?");
+  // No financial data changes before the explicit user confirmation.
+  expect(await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("mizan-finance-v1")!).transactions
+      .some((item: { title: string }) => item.title === "Discard after backup"))).toBe(true);
+  await confirm.getByRole("button", { name: "Replace and restore" }).click();
+  await expect(confirm).toHaveCount(0);
+
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("mizan-finance-v1")!));
+  expect(saved.transactions.some((item: { title: string; amount: number }) =>
+    item.title === "Original offline entry" && item.amount === 42.5)).toBe(true);
+  expect(saved.transactions.some((item: { title: string }) => item.title === "Discard after backup")).toBe(false);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator(".transaction-row").filter({ hasText: "Original offline entry" })).toBeVisible();
+  await expect(page.locator(".transaction-row").filter({ hasText: "Discard after backup" })).toHaveCount(0);
+});
+
+test.describe("Android-emulated installed-screen checks", () => {
+  test.use({ ...devices["Pixel 7"] });
+
+  test("mobile RTL keyboard dialog and offline navigation survive restart", async ({ page, context }, testInfo) => {
+    test.setTimeout(120_000);
+    await page.addInitScript(() => {
+      localStorage.setItem("mizan-language", "ar");
+      localStorage.setItem("theme", "dark");
+    });
+    await page.goto("/");
+    await expect(page.locator(".v16-dashboard")).toBeVisible();
+    await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
+    await page.reload();
+    await expect(page.locator(".v16-dashboard")).toBeVisible();
+    await page.goto("/transactions");
+    await expect(page.locator(".transaction-list")).toBeVisible();
+    await page.goto("/");
+    await expect(page.locator(".v16-dashboard")).toBeVisible();
+
+    await context.setOffline(true);
+    const response = await page.reload({ waitUntil: "domcontentloaded" });
+    expect(response?.status()).toBe(200);
+    await expect(page.locator(".v16-dashboard")).toBeVisible();
+    await expect(page.locator(".mobile-nav")).toBeVisible();
+    await page.waitForFunction(() =>
+      document.documentElement.lang === "ar"
+      && document.documentElement.dir === "rtl"
+      && document.documentElement.classList.contains("dark"));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(await page.evaluate(() => innerWidth + 1));
+
+    await page.locator(".mobile-nav a[href='/transactions']").click();
+    await expect(page.locator(".transaction-list")).toBeVisible();
+    await page.locator(".page-header button").click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator("#transaction-title")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+
+    await page.screenshot({ path: testInfo.outputPath("android-emulated-offline.png"), fullPage: true });
+  });
 });
