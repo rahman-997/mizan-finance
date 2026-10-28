@@ -203,3 +203,27 @@ test.describe("Android-emulated installed-screen checks", () => {
     await page.screenshot({ path: testInfo.outputPath("android-emulated-offline.png"), fullPage: true });
   });
 });
+
+
+test("new sections remain interactive after a production offline restart", async ({ page, context }) => {
+  test.setTimeout(120_000);
+  await page.goto("/goals");
+  await expect(page.getByRole("heading", { name: "Save for what matters" })).toBeVisible();
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30_000 });
+  await page.reload();
+  await expect(page.getByRole("button", { name: "New goal" })).toBeVisible();
+  await page.goto("/reports");
+  await expect(page.getByRole("heading", { name: "Your money in perspective" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Export CSV" })).toBeVisible();
+  await context.setOffline(true);
+  const report = await page.reload({ waitUntil: "domcontentloaded" });
+  expect(report?.status()).toBe(200);
+  await page.getByRole("button", { name: "12 months" }).click();
+  await expect(page.getByRole("table").getByRole("row")).toHaveCount(13);
+  const goalsResponse = await page.goto("/goals", { waitUntil: "domcontentloaded" });
+  expect(goalsResponse?.status()).toBe(200);
+  await page.getByRole("button", { name: "New goal" }).click();
+  await expect(page.getByRole("dialog").locator("#goal-title")).toBeVisible();
+});
