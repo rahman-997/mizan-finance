@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { seedData } from "./seed-data";
-import type { Budget, FinanceData, Transaction, TransactionDraft } from "./types";
+import type { Budget, FinanceData, SavingsGoal, Transaction, TransactionDraft } from "./types";
+import { appendGoal, changeGoal, deleteGoal } from "@/lib/goal-utils.mjs";
 
 import { parseBackup, materializeRecurring, appendTransaction, appendMonthlyExpense, localDate } from "@/lib/finance-backup.mjs";
 import { createFinanceJournal } from "@/lib/finance-journal.mjs";
