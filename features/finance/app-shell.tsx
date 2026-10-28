@@ -14,6 +14,9 @@ import {
   Target,
   Flag,
   FileBarChart2,
+  Repeat2,
+  CalendarDays,
+  MoreHorizontal,
   WalletCards,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -30,8 +33,10 @@ import { BudgetsView } from "@/features/budgets/budgets-view";
 import { InsightsView } from "@/features/insights/insights-view";
 import { GoalsView } from "@/features/goals/goals-view";
 import { ReportsView } from "@/features/reports/reports-view";
+import { RecurringView } from "@/features/recurring/recurring-view";
+import { CalendarView } from "@/features/calendar/calendar-view";
 
-export type AppView = "dashboard" | "transactions" | "budgets" | "insights" | "goals" | "reports";
+export type AppView = "dashboard" | "transactions" | "budgets" | "insights" | "goals" | "reports" | "recurring" | "calendar";
 
 const navigation = [
   { href: "/", key: "dashboard" as const, icon: LayoutDashboard },
@@ -40,6 +45,8 @@ const navigation = [
   { href: "/insights", key: "insights" as const, icon: BarChart3 },
   { href: "/goals", key: "goals" as const, icon: Flag },
   { href: "/reports", key: "reports" as const, icon: FileBarChart2 },
+  { href: "/recurring", key: "recurring" as const, icon: Repeat2 },
+  { href: "/calendar", key: "calendar" as const, icon: CalendarDays },
 ];
 
 const pageCopyKeys = {
@@ -49,6 +56,8 @@ const pageCopyKeys = {
   insights: { eyebrow: "insightsEyebrow", title: "insightsTitle", intro: "insightsIntro" },
   goals: { eyebrow: "goalsEyebrow", title: "goalsTitle", intro: "goalsIntro" },
   reports: { eyebrow: "reportsEyebrow", title: "reportsTitle", intro: "reportsIntro" },
+  recurring: { eyebrow: "recurringEyebrow", title: "recurringTitle", intro: "recurringIntro" },
+  calendar: { eyebrow: "calendarEyebrow", title: "calendarTitle", intro: "calendarIntro" },
 } as const satisfies Record<AppView, { eyebrow: string; title: string; intro: string }>;
 
 function LoadingState({ label }: { label: string }) {
@@ -66,6 +75,7 @@ export function AppShell({ view }: { view: AppView }) {
   const { language, setLanguage, t } = useLocale();
   const finance = useFinance();
   const [newOpen, setNewOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   if (finance.isLoading) return <LoadingState label={t("loading")} />;
 
@@ -145,15 +155,27 @@ export function AppShell({ view }: { view: AppView }) {
         {view === "insights" && <InsightsView />}
         {view === "goals" && <GoalsView />}
         {view === "reports" && <ReportsView />}
+        {view === "recurring" && <RecurringView />}
+        {view === "calendar" && <CalendarView />}
 
         <footer className="site-footer"><span>Mizan Finance</span><span>{t("footerText")}</span></footer>
       </main>
 
       <nav className="mobile-nav" aria-label={t("mobileNavigation")}>
-        {navigation.map(({ href, key, icon: Icon }) => {
+        {navigation.filter(({key}) => ["dashboard","transactions","budgets","goals"].includes(key)).map(({ href, key, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return <a key={key} href={href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}><Icon /><span>{t(key)}</span></a>;
+          return <a key={key} href={href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}><Icon aria-hidden="true"/><span>{t(key)}</span></a>;
         })}
+        <button type="button" className={moreOpen || ["/insights", "/reports", "/recurring", "/calendar"].some(href => pathname.startsWith(href)) ? "active" : ""}
+          aria-label={t("moreSections")} aria-expanded={moreOpen} aria-controls="mizan-mobile-more" onClick={() => setMoreOpen(open => !open)}>
+          <MoreHorizontal aria-hidden="true"/><span>{t("moreSections")}</span>
+        </button>
+        {moreOpen && <div id="mizan-mobile-more" className="mobile-more-menu">
+          {navigation.filter(({key}) => ["insights","reports","recurring","calendar"].includes(key)).map(({href,key,icon:Icon}) =>
+            <a key={key} href={href} aria-current={pathname.startsWith(href) ? "page" : undefined}>
+              <Icon aria-hidden="true"/><span>{t(key)}</span>
+            </a>)}
+        </div>}
       </nav>
 
       <TransactionForm open={newOpen} onOpenChange={setNewOpen} onSubmit={finance.addTransaction} />
