@@ -17,6 +17,8 @@ import {
   Repeat2,
   CalendarDays,
   MoreHorizontal,
+  Landmark,
+  Calculator,
   WalletCards,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -35,8 +37,10 @@ import { GoalsView } from "@/features/goals/goals-view";
 import { ReportsView } from "@/features/reports/reports-view";
 import { RecurringView } from "@/features/recurring/recurring-view";
 import { CalendarView } from "@/features/calendar/calendar-view";
+import { HoldingsView } from "@/features/holdings/holdings-view";
+import { PlannerView } from "@/features/planner/planner-view";
 
-export type AppView = "dashboard" | "transactions" | "budgets" | "insights" | "goals" | "reports" | "recurring" | "calendar";
+export type AppView = "dashboard" | "transactions" | "budgets" | "insights" | "goals" | "reports" | "recurring" | "calendar" | "holdings" | "planner";
 
 const navigation = [
   { href: "/", key: "dashboard" as const, icon: LayoutDashboard },
@@ -47,6 +51,8 @@ const navigation = [
   { href: "/reports", key: "reports" as const, icon: FileBarChart2 },
   { href: "/recurring", key: "recurring" as const, icon: Repeat2 },
   { href: "/calendar", key: "calendar" as const, icon: CalendarDays },
+  { href: "/holdings", key: "holdings" as const, icon: Landmark },
+  { href: "/planner", key: "planner" as const, icon: Calculator },
 ];
 
 const pageCopyKeys = {
@@ -58,6 +64,8 @@ const pageCopyKeys = {
   reports: { eyebrow: "reportsEyebrow", title: "reportsTitle", intro: "reportsIntro" },
   recurring: { eyebrow: "recurringEyebrow", title: "recurringTitle", intro: "recurringIntro" },
   calendar: { eyebrow: "calendarEyebrow", title: "calendarTitle", intro: "calendarIntro" },
+  holdings: { eyebrow: "holdingsEyebrow", title: "holdingsTitle", intro: "holdingsIntro" },
+  planner: { eyebrow: "plannerEyebrow", title: "plannerTitle", intro: "plannerIntro" },
 } as const satisfies Record<AppView, { eyebrow: string; title: string; intro: string }>;
 
 function LoadingState({ label }: { label: string }) {
@@ -157,6 +165,8 @@ export function AppShell({ view }: { view: AppView }) {
         {view === "reports" && <ReportsView />}
         {view === "recurring" && <RecurringView />}
         {view === "calendar" && <CalendarView />}
+        {view === "holdings" && <HoldingsView />}
+        {view === "planner" && <PlannerView />}
 
         <footer className="site-footer"><span>Mizan Finance</span><span>{t("footerText")}</span></footer>
       </main>
@@ -166,12 +176,12 @@ export function AppShell({ view }: { view: AppView }) {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return <a key={key} href={href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}><Icon aria-hidden="true"/><span>{t(key)}</span></a>;
         })}
-        <button type="button" className={moreOpen || ["/insights", "/reports", "/recurring", "/calendar"].some(href => pathname.startsWith(href)) ? "active" : ""}
+        <button type="button" className={moreOpen || ["/insights", "/reports", "/recurring", "/calendar", "/holdings", "/planner"].some(href => pathname.startsWith(href)) ? "active" : ""}
           aria-label={t("moreSections")} aria-expanded={moreOpen} aria-controls="mizan-mobile-more" onClick={() => setMoreOpen(open => !open)}>
           <MoreHorizontal aria-hidden="true"/><span>{t("moreSections")}</span>
         </button>
         {moreOpen && <div id="mizan-mobile-more" className="mobile-more-menu">
-          {navigation.filter(({key}) => ["insights","reports","recurring","calendar"].includes(key)).map(({href,key,icon:Icon}) =>
+          {navigation.filter(({key}) => ["insights","reports","recurring","calendar","holdings","planner"].includes(key)).map(({href,key,icon:Icon}) =>
             <a key={key} href={href} aria-current={pathname.startsWith(href) ? "page" : undefined}>
               <Icon aria-hidden="true"/><span>{t(key)}</span>
             </a>)}
