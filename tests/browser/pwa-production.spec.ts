@@ -20,7 +20,7 @@ test("production build hydrates and edits after a cold offline restart", async (
   await page.goto("/transactions", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".transaction-list")).toBeVisible();
   const cache = await page.evaluate(async () => {
-    const store = await caches.open("mizan-static-v4");
+    const store = await caches.open("mizan-static-v5");
     const urls = (await store.keys()).map((request) => new URL(request.url).pathname);
     return { scripts: urls.filter((url) => /\.(?:js|css)$/.test(url)), pages: urls.filter((url) => ["/", "/transactions", "/budgets", "/insights"].includes(url)) };
   });
