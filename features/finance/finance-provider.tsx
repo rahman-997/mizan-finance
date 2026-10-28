@@ -211,7 +211,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [commit]);
 
   const value = useMemo(
-    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
+    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
     [data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
   );
 
