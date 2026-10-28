@@ -227,3 +227,29 @@ test("new sections remain interactive after a production offline restart", async
   await page.getByRole("button", { name: "New goal" }).click();
   await expect(page.getByRole("dialog").locator("#goal-title")).toBeVisible();
 });
+
+
+test("calendar and recurring expense manager cold-reopen without network after asset warmup",async ({page,context})=>{
+  test.setTimeout(120_000);
+  await page.goto("/calendar");
+  await expect(page.getByRole("heading",{name:"Your financial calendar"})).toBeVisible();
+  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
+  await page.waitForFunction(()=>navigator.serviceWorker.controller !== null,null,{timeout:30000});
+  await page.reload();
+  await expect(page.getByRole("heading",{name:"Your financial calendar"})).toBeVisible();
+  await page.goto("/recurring");
+  await expect(page.getByRole("heading",{name:"Plan recurring expenses"})).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button",{name:"Add recurring expense"})).toBeVisible();
+  await context.setOffline(true);
+  const recurring=await page.reload({waitUntil:"domcontentloaded"});
+  expect(recurring?.status()).toBe(200);
+  await page.getByRole("button",{name:"Add recurring expense"}).click();
+  await expect(page.getByRole("dialog").locator("#transaction-title")).toBeVisible();
+  await page.getByRole("dialog").getByRole("button",{name:"Cancel"}).click();
+  const calendar=await page.goto("/calendar",{waitUntil:"domcontentloaded"});
+  expect(calendar?.status()).toBe(200);
+  await expect(page.getByRole("heading",{name:"Your financial calendar"})).toBeVisible();
+  await page.getByRole("button",{name:"Previous month"}).click();
+  await expect(page.getByRole("button",{name:"Today"})).toBeVisible();
+});
