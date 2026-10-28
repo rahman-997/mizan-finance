@@ -42,5 +42,8 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      - name: Block moderate-or-higher production dependency advisories
+        run: npm audit --omit=dev --audit-level=moderate
+
       - name: Validate project
         run: npm run ci
