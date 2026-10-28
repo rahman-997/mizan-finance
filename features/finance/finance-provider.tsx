@@ -169,6 +169,13 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const restoreBackup = useCallback((value: unknown) => {
+    // Restores are writes too. A stale tab must not silently replace changes
+    // already committed by another tab, even if the backup is valid.
+    const disk = window.localStorage.getItem(STORAGE_KEY);
+    if (storageConflict || !equivalentSnapshots(disk, persisted.current)) {
+      setStorageConflict(true);
+      throw new Error("EXTERNAL_CHANGE");
+    }
     const restored = materializeRecurring(parseBackup(value), localDate());
     // Persist before replacing the current view. Failure leaves the current data intact.
     const serialized = JSON.stringify(restored);
@@ -177,7 +184,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     journal.current.replace(restored);
     setStorageConflict(false);
     setData(restored); setStorageError(null); setIsLoading(false);
-  }, []);
+  }, [storageConflict]);
   const addMonthlyExpense = useCallback((draft: TransactionDraft) => {
     const id = globalThis.crypto?.randomUUID?.() ?? `rule-${Date.now()}`;
     commit((current) => appendMonthlyExpense(current, {
