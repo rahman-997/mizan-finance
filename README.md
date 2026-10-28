@@ -168,3 +168,15 @@ Please do not merge to `main` or deploy without explicit approval. Physical Andr
 - **QA**: Month-end, leap-year, duplicate-count and read-only calendar cases are unit tested. Browser cases cover English/Arabic recurrence management, navigation and small-screen More menu. A separate production Chromium workflow exercises cold offline reopening of both new routes.
 
 The existing JSON backup already includes recurring rules, and the new pages use the existing finance provider and multi-tab conflict protection. This is a draft development feature, **not** a merged or published release. Physical Android installation, real-device backup/restore and accessibility checks remain required.
+
+## V16 development: manual holdings and what-if month planner
+
+Two additional sections bring the development dashboard to **10 desktop sections**.
+
+- **Assets and liabilities (`/holdings`)**: Record up to 40 self-assessed assets and liabilities, edit them, and remove them with confirmation. Totals show assets, liabilities and their difference. These are *manual estimates*, not verified balances, and do not create transactions, change the dashboard cash balance, contact banks or initiate payments. Entries use the existing journal and multi-tab write-conflict protections.
+- **Month planner (`/planner`)**: See income, expenses and net amount from transactions recorded in the current calendar month. Enter hypothetical income/spending changes and compare a computed scenario against the recorded baseline. Adjustments never persist and are **not forecasts or financial advice**.
+- **Backups**: Export version **4** includes optional holdings, and the restore confirmation displays their count. Older backups, including versions 1, 2 and 3, remain accepted. Malformed, duplicate, excessive and nonfinite holdings are rejected before replacing records.
+- **Navigation and offline**: New sections appear in the desktop sidebar and mobile **More sections** menu. The service-worker static shell has been bumped to `mizan-static-v5`; the two routes are eligible for pre-caching. A production Chromium test reopens both pages offline after warming the local cache.
+- **Quality checks**: Unit tests validate held-item lifecycle, backup compatibility, monthly calculations, and scenario purity. Browser tests check both languages, JSON backups, mobile navigation, and that scenarios never rewrite stored finance records.
+
+Physical Android installation, update behavior and accessibility on a real device are not yet verified. No merge or deployment is authorized.
