@@ -6,6 +6,9 @@ export type Language = "en" | "ar";
 
 const messages = {
   en: {
+    recurring: "Recurring", calendar: "Calendar", moreSections: "More sections",
+    recurringEyebrow: "MONTHLY RULES", recurringTitle: "Plan recurring expenses", recurringIntro: "Review and stop automatic local ledger entries without making payments.",
+    calendarEyebrow: "DATES", calendarTitle: "Your financial calendar", calendarIntro: "See recorded transactions and future scheduled entries separately.",
     goals: "Savings goals", reports: "Reports",
     goalsEyebrow: "MILESTONES", goalsTitle: "Save for what matters", goalsIntro: "Track plans and progress without mixing them with your transactions.",
     reportsEyebrow: "HISTORY", reportsTitle: "Your money in perspective", reportsIntro: "A clear, month-by-month look at your recorded income and spending.",
@@ -64,6 +67,9 @@ const messages = {
     transactionTypeAria: "Transaction type", categoryAria: "Category", exampleTitle: "e.g. Weekly groceries", mizanHome: "Mizan home", primaryNavigation: "Primary navigation", mobileNavigation: "Mobile navigation",
   },
   ar: {
+    recurring: "المتكررة", calendar: "التقويم", moreSections: "المزيد",
+    recurringEyebrow: "القواعد الشهرية", recurringTitle: "المصروفات المتكررة", recurringIntro: "راجع وإيقف التسجيل المتكرر داخل التطبيق، بدون أي دفع بنكي.",
+    calendarEyebrow: "المواعيد", calendarTitle: "تقويمك المالي", calendarIntro: "شاهد المعاملات المسجلة والمواعيد القادمة كلٌ على حدة.",
     goals: "أهداف الادخار", reports: "التقارير",
     goalsEyebrow: "أهدافك", goalsTitle: "ادّخر لما يهمك", goalsIntro: "تابع أهدافك وتقدمك بدون خلطها مع المعاملات المالية.",
     reportsEyebrow: "السجل", reportsTitle: "تقاريرك الشهرية", reportsIntro: "مقارنة واضحة للدخل والمصروفات التي سجّلتها، شهراً بشهر.",
