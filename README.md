@@ -157,3 +157,14 @@ Two additional bilingual sections are available on the **development branch only
 - **Offline behavior:** The service worker uses a newly versioned cache and pre-caches the new routes. As with other Mizan screens, assets should be warmed while connected before relying on offline reload. Chromium production tests cover the cold-offline navigation after warming the routes.
 
 Please do not merge to `main` or deploy without explicit approval. Physical Android installation and accessibility testing on a real device remain separate release checks.
+
+
+## Additional V16 development sections: recurring expenses and financial calendar
+
+- **Recurring expenses (`/recurring`)**: Review existing monthly expense rules, create a validated expense-only rule with a start date, see the next scheduled local-ledger entry, and stop the rule after a confirmation. Stopping a rule **does not delete previously recorded transactions**. A due rule is materialized in the local finance ledger on app load and when added; the app does **not** pay bills, send notifications, connect to banks or execute transfers.
+- **Financial calendar (`/calendar`)**: Browse months, select a day, see recorded transactions alongside clearly distinguished *scheduled* rule previews. A preview is read-only and is not included as a recorded transaction, balance change or proof of payment.
+- **Mobile**: The bottom tab bar stays usable at 320px with four primary destinations and a keyboard-accessible **More sections** menu for Insights, Reports, Recurring and Calendar. All eight routes are available in the desktop sidebar.
+- **PWA**: The new routes are part of the versioned offline shell. Online installation and asset caching must happen before an offline cold restart.
+- **QA**: Month-end, leap-year, duplicate-count and read-only calendar cases are unit tested. Browser cases cover English/Arabic recurrence management, navigation and small-screen More menu. A separate production Chromium workflow exercises cold offline reopening of both new routes.
+
+The existing JSON backup already includes recurring rules, and the new pages use the existing finance provider and multi-tab conflict protection. This is a draft development feature, **not** a merged or published release. Physical Android installation, real-device backup/restore and accessibility checks remain required.
