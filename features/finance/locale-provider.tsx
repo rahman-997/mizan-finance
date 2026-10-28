@@ -6,6 +6,9 @@ export type Language = "en" | "ar";
 
 const messages = {
   en: {
+    goals: "Savings goals", reports: "Reports",
+    goalsEyebrow: "MILESTONES", goalsTitle: "Save for what matters", goalsIntro: "Track plans and progress without mixing them with your transactions.",
+    reportsEyebrow: "HISTORY", reportsTitle: "Your money in perspective", reportsIntro: "A clear, month-by-month look at your recorded income and spending.",
     dashboard: "Overview", transactions: "Transactions", budgets: "Budgets", insights: "Insights",
     addTransaction: "Add transaction", totalBalance: "Total balance", income: "Income", expenses: "Expenses",
     savingsRate: "Savings rate", thisMonth: "This month", recentActivity: "Recent activity",
@@ -61,6 +64,9 @@ const messages = {
     transactionTypeAria: "Transaction type", categoryAria: "Category", exampleTitle: "e.g. Weekly groceries", mizanHome: "Mizan home", primaryNavigation: "Primary navigation", mobileNavigation: "Mobile navigation",
   },
   ar: {
+    goals: "أهداف الادخار", reports: "التقارير",
+    goalsEyebrow: "أهدافك", goalsTitle: "ادّخر لما يهمك", goalsIntro: "تابع أهدافك وتقدمك بدون خلطها مع المعاملات المالية.",
+    reportsEyebrow: "السجل", reportsTitle: "تقاريرك الشهرية", reportsIntro: "مقارنة واضحة للدخل والمصروفات التي سجّلتها، شهراً بشهر.",
     dashboard: "نظرة عامة", transactions: "المعاملات", budgets: "الميزانيات", insights: "التحليلات",
     addTransaction: "إضافة معاملة", totalBalance: "الرصيد الكلي", income: "الدخل", expenses: "المصروفات",
     savingsRate: "معدل الادخار", thisMonth: "هذا الشهر", recentActivity: "آخر النشاطات",
