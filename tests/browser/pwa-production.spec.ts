@@ -154,7 +154,13 @@ test("offline backup export and confirmed restore preserve original finance reco
 });
 
 test.describe("Android-emulated installed-screen checks", () => {
-  test.use({ ...devices["Pixel 7"] });
+  test.use({
+    viewport: devices["Pixel 7"].viewport,
+    deviceScaleFactor: devices["Pixel 7"].deviceScaleFactor,
+    hasTouch: devices["Pixel 7"].hasTouch,
+    isMobile: devices["Pixel 7"].isMobile,
+    userAgent: devices["Pixel 7"].userAgent,
+  });
 
   test("mobile RTL keyboard dialog and offline navigation survive restart", async ({ page, context }, testInfo) => {
     test.setTimeout(120_000);
