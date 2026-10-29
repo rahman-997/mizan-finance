@@ -69,3 +69,19 @@ test("twelve-section mobile More menu includes purchases and privacy without ove
  await expect(page.getByRole("heading",{name:"Your data, your control"})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
 });
+
+
+test("long desktop section navigation stays scrollable without hiding backup controls",async ({page})=>{
+  for(const viewport of [{width:1280,height:720},{width:1024,height:600}]){
+    await page.setViewportSize(viewport);
+    await page.goto("/transactions");
+    const nav=page.locator(".desktop-nav");
+    await expect(nav).toBeVisible();
+    expect(await nav.evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true);
+    await expect(page.getByRole("button",{name:"Export data"})).toBeInViewport();
+    await expect(page.getByRole("button",{name:"Restore backup"})).toBeInViewport();
+    await nav.getByRole("link",{name:"Privacy & data"}).scrollIntoViewIfNeeded();
+    await expect(page.getByRole("button",{name:"Export data"})).toBeInViewport();
+    await expect(page.getByRole("button",{name:"Restore backup"})).toBeInViewport();
+  }
+});
