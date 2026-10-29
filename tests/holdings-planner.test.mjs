@@ -26,7 +26,7 @@ test("new holdings survive backup roundtrip and v1-v3 backups remain valid",()=>
  assert.deepEqual(data.holdings,[item]);
  assert.deepEqual(parseBackup(data),data);
  for(const version of [1,2,3]) assert.equal(parseBackup({...blank,version}).holdings,undefined);
- assert.throws(()=>parseBackup({...blank,version:5}));
+ assert.throws(()=>parseBackup({...blank,version:6}));
 });
 test("planner uses only actual recorded entries for the selected month",()=>{
  const transactions=[
