@@ -2,8 +2,8 @@
  * Financial entries and JSON backups always stay in browser storage.
  */
 const CACHE_PREFIX = "mizan-static-";
-const CACHE_NAME = CACHE_PREFIX + "v5";
-const APP_PAGES = new Set(["/", "/transactions", "/budgets", "/insights", "/goals", "/reports", "/recurring", "/calendar", "/holdings", "/planner"]);
+const CACHE_NAME = CACHE_PREFIX + "v6";
+const APP_PAGES = new Set(["/", "/transactions", "/budgets", "/insights", "/goals", "/reports", "/recurring", "/calendar", "/holdings", "/planner", "/purchases", "/data-center"]);
 const APP_SHELL = [...APP_PAGES, "/favicon.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
