@@ -284,3 +284,32 @@ test("holdings and planner cold-reopen and remain interactive in production offl
   expect(second?.status()).toBe(200);
   await expect(page.getByRole("heading",{name:"Offline bicycle"})).toBeVisible();
 });
+
+
+test("planned purchases and privacy center work after a cold offline production restart",async ({page,context})=>{
+ test.setTimeout(120_000);
+ await page.goto("/purchases",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("heading",{name:"Plan before you buy"})).toBeVisible();
+ await page.evaluate(async()=>{await navigator.serviceWorker.ready;});
+ await page.waitForFunction(()=>navigator.serviceWorker.controller!==null,null,{timeout:30000});
+ await page.reload();
+ await expect(page.getByRole("button",{name:"Add planned purchase"})).toBeVisible();
+ await page.goto("/data-center",{waitUntil:"domcontentloaded"});
+ await expect(page.getByRole("heading",{name:"Your data, your control"})).toBeVisible();
+ await page.reload();
+ await expect(page.locator("main").getByRole("button",{name:"Export data"})).toBeVisible();
+ await context.setOffline(true);
+ const privacy=await page.reload({waitUntil:"domcontentloaded"});
+ expect(privacy?.status()).toBe(200);
+ await expect(page.getByRole("heading",{name:"Your data, your control"})).toBeVisible();
+ const purchases=await page.goto("/purchases",{waitUntil:"domcontentloaded"});
+ expect(purchases?.status()).toBe(200);
+ await page.getByRole("button",{name:"Add planned purchase"}).click();
+ await page.getByRole("dialog").locator("#plan-title").fill("Offline headphones");
+ await page.getByRole("dialog").locator("#plan-amount").fill("65");
+ await page.getByRole("dialog").getByRole("button",{name:"Save plan"}).click();
+ await expect(page.getByRole("dialog")).toHaveCount(0);
+ const again=await page.reload({waitUntil:"domcontentloaded"});
+ expect(again?.status()).toBe(200);
+ await expect(page.getByRole("heading",{name:"Offline headphones"})).toBeVisible();
+});
