@@ -26,7 +26,7 @@ for (const language of ["en","ar"] as const) {
       page.getByRole("button",{name:ar?"تصدير البيانات":"Export data"}).click()
     ]);
     const exported=JSON.parse(await readFile(await backup.path(),"utf8"));
-    expect(exported.version).toBe(4);
+    expect(exported.version).toBe(5);
     expect(exported.holdings.find((v:{label:string})=>v.label==="Handcrafted desk")?.value).toBe(550);
     expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mizan-finance-v1")||"{}").transactions)).toEqual(oldTx);
     await page.getByRole("button",{name:ar?"حذف البند: Handcrafted desk":"Delete item: Handcrafted desk"}).click();
@@ -55,7 +55,7 @@ test("new sections are accessible from 320px mobile More navigation",async ({pag
   await page.setViewportSize({width:320,height:740});
   await page.goto("/");
   await page.getByRole("button",{name:"More sections"}).click();
-  await expect(page.locator(".mobile-more-menu a")).toHaveCount(6);
+  await expect(page.locator(".mobile-more-menu a")).toHaveCount(8);
   await page.locator(".mobile-more-menu a[href='/holdings']").click();
   await expect(page.getByRole("heading",{name:"Know what you own and owe"})).toBeVisible();
   await page.getByRole("button",{name:"More sections"}).click();
