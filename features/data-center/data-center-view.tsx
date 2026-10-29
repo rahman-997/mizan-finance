@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Database, HardDrive, LockKeyhole, ShieldAlert, FileJson, CloudOff, Info } from "lucide-react";
 import { useFinance } from "@/features/finance/finance-provider";
 import { useLocale } from "@/features/finance/locale-provider";
@@ -11,17 +11,12 @@ export function DataCenterView(){
   const finance=useFinance();
   const {language}=useLocale();
   const ar=language==="ar";
-  const [storedBytes,setStoredBytes]=useState<number|null>(null);
   const {transactions,budgets,recurring=[],goals=[],holdings=[],plans=[]}=finance;
-  useEffect(()=>{
-    try{
-      const value=window.localStorage.getItem("mizan-finance-v1");
-      setStoredBytes(value===null?null:new Blob([value]).size);
-    }catch{setStoredBytes(null);}
-  },[transactions,budgets,recurring,goals,holdings,plans]);
+  // A read-only UTF-8 estimate from React state; never read/write storage while rendering.
+  const estimateBytes=useMemo(()=>new TextEncoder().encode(JSON.stringify({transactions,budgets,recurring,goals,holdings,plans})).length,[transactions,budgets,recurring,goals,holdings,plans]);
   const c=ar?{
     heading:"مركز البيانات والخصوصية",intro:"اعرف شو محفوظ بهالمتصفح، وخذ نسخة بيدك وقت ما بدك.",
-    local:"بيانات على هذا الجهاز",storage:"حجم ملف السجلات المحلي تقريباً",notYet:"غير متوفر",
+    local:"بيانات على هذا الجهاز",storage:"حجم البيانات التقريبي بصيغة JSON",notYet:"غير متوفر",
     transactions:"المعاملات",budgets:"الميزانيات",recurring:"القواعد المتكررة",goals:"أهداف الادخار",holdings:"الأصول والالتزامات",plans:"المشتريات المخطّطة",
     backup:"نسخك الاحتياطية",backupInfo:"نزّل ملف JSON واحتفظ فيه بمكان آمن. عند استرجاع الملف، رح تراجع عدد السجلات وتؤكد الاستبدال قبل أي تغيير.",
     safety:"معلومات خصوصيتك",localNote:"السجلات تبقى داخل تخزين هذا المتصفح. ما في ربط بحسابات بنكية أو مزامنة سحابية ضمن هالتطبيق.",
@@ -31,7 +26,7 @@ export function DataCenterView(){
     error:"تعذّر حفظ البيانات حالياً على هذا المتصفح. انسخ بياناتك احتياطياً قبل تعديل المزيد."
   }:{
     heading:"Privacy & data center",intro:"See what this browser stores and keep a backup under your control.",
-    local:"Stored on this device",storage:"Approximate local record file size",notYet:"Not available",
+    local:"Stored on this device",storage:"Approximate JSON record size",notYet:"Not available",
     transactions:"Transactions",budgets:"Budgets",recurring:"Recurring rules",goals:"Savings goals",holdings:"Assets and liabilities",plans:"Planned purchases",
     backup:"Your backup files",backupInfo:"Download a JSON copy and keep it somewhere safe. Before restoring, you can review record counts and confirm the replacement.",
     safety:"Your data privacy",localNote:"Records stay in this browser's local storage. There is no bank connection or built-in cloud sync.",
@@ -57,7 +52,7 @@ export function DataCenterView(){
           <p className="text-sm text-muted-foreground">{s.label}</p><strong className="mt-1 block text-2xl tabular-nums">{s.count}</strong>
         </div>)}
       </div>
-      <p className="mt-5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><FileJson className="h-4 w-4" aria-hidden="true"/>{c.storage}: <strong className="tabular-nums text-foreground">{storedBytes===null?c.notYet:`${new Intl.NumberFormat(ar?"ar":"en").format(storedBytes)} bytes`}</strong></p>
+      <p className="mt-5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground"><FileJson className="h-4 w-4" aria-hidden="true"/>{c.storage}: <strong className="tabular-nums text-foreground">{finance.storageError?c.notYet:`${new Intl.NumberFormat(ar?"ar":"en").format(estimateBytes)} bytes`}</strong></p>
     </div>
     <div className="surface-card p-5 md:p-7">
       <h3 className="flex items-center gap-2 text-lg font-semibold"><LockKeyhole className="h-5 w-5" aria-hidden="true"/>{c.backup}</h3>
