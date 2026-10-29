@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-html-link-for-pages -- Vinext uses full-page navigation to avoid preview cache issues. */
+
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Globe2, LockKeyhole, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
