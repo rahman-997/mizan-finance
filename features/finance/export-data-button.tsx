@@ -5,16 +5,17 @@ import { Button } from "@/components/ui/button";
 import { useFinance } from "./finance-provider";
 import { useLocale } from "./locale-provider";
 
-export function ExportDataButton() {
-  const { transactions, budgets, recurring, goals, holdings } = useFinance();
+export function ExportDataButton({showLabel=false}: {showLabel?:boolean}) {
+  const { transactions, budgets, recurring, goals, holdings, plans } = useFinance();
   const { language } = useLocale();
 
   const exportData = () => {
     const payload = {
       app: "Mizan Finance",
-      version: 4,
+      version: 5,
       goals: goals || [],
       holdings: holdings || [],
+      plans: plans || [],
       recurring: recurring || [],
       exportedBy: "Abdulrahman Hajar",
       exportedAt: new Date().toISOString(),
@@ -33,12 +34,12 @@ export function ExportDataButton() {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      size={showLabel?"default":"icon"}
       onClick={exportData}
       aria-label={language === "ar" ? "تصدير البيانات" : "Export data"}
       title={language === "ar" ? "تصدير البيانات" : "Export data"}
     >
-      <Download aria-hidden="true" />
+      <Download aria-hidden="true" />{showLabel && (language === "ar" ? "تصدير نسخة احتياطية" : "Download JSON backup")}
     </Button>
   );
 }
