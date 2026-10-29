@@ -31,7 +31,7 @@ for (const language of ["en", "ar"] as const) {
       page.getByRole("button", { name: ar ? "تصدير البيانات" : "Export data" }).click(),
     ]);
     const saved = JSON.parse(await readFile(await file.path(), "utf8"));
-    expect(saved.version).toBe(4);
+    expect(saved.version).toBe(5);
     expect(saved.goals.find((g: { title: string }) => g.title === "New bicycle")?.saved).toBe(200);
 
     await page.getByRole("button", { name: ar ? "حذف الهدف: New bicycle" : "Delete goal: New bicycle" }).click();
@@ -72,7 +72,7 @@ test("ten-section navigation with mobile More menu remains usable at 320px", asy
   await page.locator(".mobile-nav a[href='/goals']").click();
   await expect(page.getByRole("heading", { name: "Save for what matters" })).toBeVisible();
   await page.getByRole("button", { name: "More sections" }).click();
-  await expect(page.locator(".mobile-more-menu a")).toHaveCount(6);
+  await expect(page.locator(".mobile-more-menu a")).toHaveCount(8);
   await page.locator(".mobile-more-menu a[href='/reports']").click();
   await expect(page.getByRole("heading", { name: "Your money in perspective" })).toBeVisible();
 });
