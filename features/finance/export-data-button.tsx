@@ -27,8 +27,15 @@ export function ExportDataButton({showLabel=false}: {showLabel?:boolean}) {
     const link = document.createElement("a");
     link.href = url;
     link.download = `mizan-finance-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    // Chromium may cancel an offline blob download if its detached anchor's URL
+    // is revoked immediately. Attach it for the click and release it later.
+    document.body.appendChild(link);
+    try {
+      link.click();
+    } finally {
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 5_000);
+    }
   };
 
   return (
