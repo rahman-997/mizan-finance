@@ -180,3 +180,16 @@ Two additional sections bring the development dashboard to **10 desktop sections
 - **Quality checks**: Unit tests validate held-item lifecycle, backup compatibility, monthly calculations, and scenario purity. Browser tests check both languages, JSON backups, mobile navigation, and that scenarios never rewrite stored finance records.
 
 Physical Android installation, update behavior and accessibility on a real device are not yet verified. No merge or deployment is authorized.
+
+## V16 draft: planned purchases and privacy & data center
+
+Two more sections increase the development branch to **12 pages**.
+
+- **Planned purchases (`/purchases`)**: Add up to 30 manual plans with a target date and estimated amount; edit and delete them with confirmation. These are intentions, **not real purchases, due bills or transfers**. Planned costs never change recorded spending, cash balances or budgets. Inputs are validated, and the existing cross-tab conflict protection prevents stale writes.
+- **Privacy & data center (`/data-center`)**: Read how many transactions, budgets, recurring rules, goals, holdings and plans are in the current local ledger; see the approximate size of the finance JSON saved in browser localStorage; use the existing *real* JSON export and confirmed restore features from the main content area. The displayed size is just the Mizan local record string, not a browser storage quota estimate.
+- **Privacy warning**: The app has **no bank connection or built-in cloud sync**. JSON backups are **not encrypted**; exporting, downloading or uploading them to external providers is the user's responsibility. Clearing browser data or changing devices may lose records unless a usable backup was saved.
+- **Backups**: Version **5** includes the optional `plans` array. Validated imports remain compatible with older versions 1-4. The restore dialog previews how many plans will be imported before replacement. Invalid dates, duplicate entries and oversized or nonfinite amounts are rejected before any records are replaced.
+- **Navigation & PWA**: Both routes appear in the sidebar and the small-screen *More sections* menu; `mizan-static-v6` caches the updated public app shell. Production Chromium regression covers reopening and interacting with both routes after a connected cache warmup.
+- **Testing**: Dedicated unit checks prove planned purchases never create transactions, preserve old backups and reject malicious/corrupt records. Browser regressions cover EN/AR lifecycle, full v5 backup restore, 320px navigation and production cold-offline editing.
+
+These are developer-branch-only features. PR #5 remains draft, unmerged and not deployed. Physical Android install/upgrade and accessibility checks are still needed before release.
