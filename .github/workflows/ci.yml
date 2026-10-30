@@ -35,6 +35,8 @@ jobs:
           cp wrangler.jsonc "$RUNNER_TEMP/wrangler-original.jsonc"
           trap 'cp "$RUNNER_TEMP/wrangler-original.jsonc" wrangler.jsonc' EXIT
           sed -i 's/"compatibility_date": "2026-09-04"/"compatibility_date": "2026-05-22"/' wrangler.jsonc
+          # The browser preview consumes date settings embedded at build time.
+          npm run build
           node tests/otp-browser-smoke.mjs
 
       - name: Upload OTP browser screenshots
