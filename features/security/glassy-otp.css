@@ -75,6 +75,8 @@
 .mizan-otp-success-icon { display:grid; place-items:center; width:105px; height:105px; border:1px solid rgba(191,242,107,.33); border-radius:27px; background:radial-gradient(circle,rgba(191,242,107,.20),transparent 70%); color:var(--otp-lime); box-shadow:0 0 50px rgba(141,232,120,.15); animation:mizanOtpPop .45s ease-out both; }
 .mizan-otp-tag { color:var(--otp-lime); font-size:10px; letter-spacing:.18em; }
 .mizan-otp-success p { max-width:300px; color:#abc2c6; line-height:1.65; font-size:13px; }
+.mizan-otp-restart { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:43px; margin-top:10px; padding:0 18px; border:1px solid rgba(191,242,107,.52); border-radius:10px; background:rgba(191,242,107,.10); color:#d9ffae; font-size:13px; font-weight:700; cursor:pointer; transition:background .2s,transform .2s; }
+.mizan-otp-restart:hover { background:rgba(191,242,107,.19); transform:translateY(-1px); }
 @keyframes mizanOtpSpin { to { transform:rotate(360deg); } }
 @keyframes mizanOtpPop { from { opacity:0; transform:scale(.75); } to { opacity:1; transform:scale(1); } }
 @media (max-width:900px) { .mizan-otp-main { gap:30px; } .mizan-otp-intro h1 { font-size:42px; } .mizan-otp-card { padding-inline:20px; } }
