@@ -7,13 +7,14 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const delay = ms => new Promise(done => setTimeout(done, ms));
-const baseUrl = process.env.MIZAN_E2E_URL || "http://127.0.0.1:4173";
+const baseUrl = "http://127.0.0.1:4173";
+const harnessPath = "/tests/otp-harness/index.html";
 const binary = [process.env.CHROME_BIN, "/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium"].find(x => x && existsSync(x));
 if (!binary) throw new Error("Google Chrome or Chromium is required");
 const profile = await mkdtemp(join(tmpdir(), "mizan-chrome-"));
 const outputDir = resolve("screenshots/browser-smoke");
 await mkdir(outputDir, { recursive: true });
-let server, chrome, socket, serverLog = "", seq = 0;
+let viteServer, chrome, socket, seq = 0;
 const pending = new Map();
 
 function send(method, params = {}) {
@@ -67,17 +68,21 @@ async function type(code) {
 }
 
 async function run() {
-  if (!process.env.MIZAN_E2E_URL) {
-    server = spawn(process.execPath, ["scripts/run-tool.mjs", "vite", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort"], { stdio: ["ignore", "pipe", "pipe"] });
-    for (const stream of [server.stdout, server.stderr]) stream.on("data", data => { serverLog += data.toString(); });
-    let ready = false;
-    for (let i = 0; i < 200; i++) {
-      if (server.exitCode !== null) throw new Error("Preview failed: " + serverLog.slice(-3000));
-      try { if ((await fetch(baseUrl + "/verify")).ok) { ready = true; break; } } catch { /* not yet */ }
-      await delay(250);
-    }
-    if (!ready) throw new Error("Preview did not respond: " + serverLog.slice(-3000));
-  }
+  // The real OTP React components are tested inside Vite without Vinext or a
+  // Cloudflare Workers runtime. The production build is validated separately.
+  const { createServer } = await import("vite");
+  const { default: react } = await import("@vitejs/plugin-react");
+  viteServer = await createServer({
+    configFile: false,
+    root: process.cwd(),
+    plugins: [react()],
+    resolve: { alias: { "@": process.cwd() } },
+    server: { host: "127.0.0.1", port: 4173, strictPort: true },
+    appType: "spa",
+  });
+  await viteServer.listen();
+  const ready = await fetch(baseUrl + harnessPath);
+  assert.equal(ready.status, 200, "OTP harness must be served");
   chrome = spawn(binary, ["--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--no-first-run", "--no-default-browser-check", "--remote-debugging-port=0", "--user-data-dir=" + profile, "about:blank"], { stdio: "ignore" });
   let port;
   for (let i = 0; i < 100; i++) {
@@ -100,7 +105,7 @@ async function run() {
   await send("Page.enable");
   await send("Runtime.enable");
   await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
-  await send("Page.navigate", { url: baseUrl + "/verify" });
+  await send("Page.navigate", { url: baseUrl + harnessPath });
   await waitFor('Boolean(document.querySelector("input[autocomplete=one-time-code]"))', "OTP input");
   assert.equal(await evaluate('document.querySelectorAll("[data-slot=input-otp-slot]").length'), 6);
   assert.equal(await evaluate('document.querySelector(".mizan-otp-card h2").textContent'), "Verify your number");
@@ -129,7 +134,8 @@ async function run() {
 
 try { await run(); } finally {
   socket?.close();
-  for (const job of [chrome, server]) if (job && job.exitCode === null) job.kill("SIGTERM");
+  if (chrome && chrome.exitCode === null) chrome.kill("SIGTERM");
+  await viteServer?.close();
   await delay(600);
   await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 150 }).catch(() => {});
 }
