@@ -83,3 +83,38 @@ test("renders sidebar skeletons deterministically", async () => {
   assert.equal(first, second);
   assert.match(first, /--skeleton-width:70%/);
 });
+
+
+test("glassy OTP renders six accessible code slots in English", async () => {
+  const { GlassyOtp } = await vite.ssrLoadModule("/features/security/glassy-otp.tsx");
+  const html = renderToStaticMarkup(
+    React.createElement(GlassyOtp, {
+      language: "en",
+      isPreview: true,
+      onVerify: async () => false,
+    }),
+  );
+
+  assert.match(html, /Verify your number/);
+  assert.match(html, /Six-digit verification code/);
+  assert.match(html, /type="submit"/);
+  assert.equal((html.match(/data-slot="input-otp-slot"/g) ?? []).length, 6);
+  assert.match(html, /disabled=""/);
+});
+
+test("glassy OTP displays Arabic and Turkish translations", async () => {
+  const { GlassyOtp } = await vite.ssrLoadModule("/features/security/glassy-otp.tsx");
+  const render = (language) =>
+    renderToStaticMarkup(
+      React.createElement(GlassyOtp, {
+        language,
+        isPreview: true,
+        onVerify: async () => false,
+      }),
+    );
+
+  assert.match(render("ar"), /تأكيد رقم هاتفك/);
+  assert.match(render("ar"), /رمز التحقق المكوّن من ست خانات/);
+  assert.match(render("tr"), /Numaranızı doğrulayın/);
+  assert.match(render("tr"), /Altı haneli doğrulama kodu/);
+});

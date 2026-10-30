@@ -24,6 +24,7 @@ Mizan is a bilingual, privacy-first personal finance planner built as a complete
 - `/transactions` — searchable transaction ledger
 - `/budgets` — monthly category limits
 - `/insights` — spending and cash-flow analysis
+- `/verify` — glass-style six-digit OTP UI **preview only** (English, Arabic RTL, Turkish)
 - Unknown routes — custom not-found state
 
 ## Project links
@@ -102,3 +103,9 @@ MIT
 Use the upload icon beside Export to preview and restore a JSON backup (up to 5 MB). Existing exports remain supported. Restore replaces this browser’s entries and budgets only after confirmation and a successful local save. Export first to retain the current data.
 
 The repeat icon manages monthly expense rules. These create local records, never payments. Due entries are generated when the app opens, up to 120 occurrences per rule per opening and 10,000 entries overall. Short months use their last day and the original day is retained for later months. Stopping a rule keeps previous entries.
+
+## OTP interface preview
+
+Visit `/verify` to preview an interactive glassmorphism OTP component. It supports keyboard input, paste, six-digit validation, Arabic/Persian numerals, multilingual copy (English/Arabic/Turkish), error and visual success states, responsive layouts, and reduced-motion preferences. The preview code is `246810`.
+
+**Security note:** This is **not** authentication. The app still stores finance data locally with no accounts or SMS delivery; completing the preview does not grant access or protect data. For production integration, pass a server-side code-verification callback to `GlassyOtp` and implement server-enforced expiration, attempt limits, sessions and a real resend endpoint. Never use `verifyPreviewOtp` in real authorization.

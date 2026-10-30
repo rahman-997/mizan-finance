@@ -13,6 +13,7 @@ import {
   Sun,
   Target,
   WalletCards,
+  ShieldCheck,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ export function AppShell({ view }: { view: AppView }) {
             );
           })}
         </nav>
+        <a href="/verify" className="nav-link" style={{ marginTop: 14 }}><ShieldCheck aria-hidden="true" /><span>{language === "ar" ? "معاينة التحقق" : "OTP UI preview"}</span></a>
         <div className="sidebar-note">
           <span className="signal-dot" aria-hidden="true" />
           <p><strong>{t("savedOnDevice")}</strong><span>{t("savedOnDeviceHint")}</span></p>
@@ -133,6 +135,7 @@ export function AppShell({ view }: { view: AppView }) {
         })}
       </nav>
 
+      <a href="/verify" className="mizan-mobile-otp-preview" aria-label={language === "ar" ? "معاينة واجهة التحقق" : "Preview OTP interface"}><ShieldCheck aria-hidden="true" />{language === "ar" ? "معاينة OTP" : "OTP preview"}</a>
       <TransactionForm open={newOpen} onOpenChange={setNewOpen} onSubmit={finance.addTransaction} />
     </div>
   );

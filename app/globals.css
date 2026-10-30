@@ -374,3 +374,12 @@ button.transaction-row:hover { background: var(--secondary); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+/* Entry point for the optional glass OTP design preview on small screens. */
+.mizan-mobile-otp-preview { display:none; }
+@media (max-width: 760px) {
+  .mizan-mobile-otp-preview { display:inline-flex; position:fixed; right:16px; bottom:84px; z-index:29; align-items:center; gap:6px; border:1px solid rgba(23,27,49,.13); border-radius:100px; padding:10px 13px; background:#171b31; color:#bff26b; font-size:11px; font-weight:750; text-decoration:none; box-shadow:0 7px 25px rgba(12,19,33,.17); }
+  [dir="rtl"] .mizan-mobile-otp-preview { right:auto; left:16px; }
+  .mizan-mobile-otp-preview svg { width:15px; height:15px; }
+}
