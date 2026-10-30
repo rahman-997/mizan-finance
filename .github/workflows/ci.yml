@@ -29,7 +29,13 @@ jobs:
         run: npm run ci
 
       - name: Smoke test OTP in headless Chrome
-        run: node tests/otp-browser-smoke.mjs
+        run: |
+          # Work around the pinned local Miniflare runtime's compatibility-date ceiling.
+          # This only changes the disposable CI workspace, never the repository or production config.
+          cp wrangler.jsonc "$RUNNER_TEMP/wrangler-original.jsonc"
+          trap 'cp "$RUNNER_TEMP/wrangler-original.jsonc" wrangler.jsonc' EXIT
+          sed -i 's/"compatibility_date": "2026-09-04"/"compatibility_date": "2026-05-22"/' wrangler.jsonc
+          node tests/otp-browser-smoke.mjs
 
       - name: Upload OTP browser screenshots
         if: always()
