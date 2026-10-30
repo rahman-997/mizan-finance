@@ -91,6 +91,15 @@ export function GlassyOtp({
     }
   }
 
+  function restartPreview() {
+    if (!isPreview || state !== "success") return;
+    operation.current += 1;
+    setCode("");
+    setState("idle");
+    setSeconds(20);
+    setNotice("");
+  }
+
   async function reset() {
     if (seconds > 0 || state === "checking") return;
     const id = ++operation.current;
@@ -117,6 +126,11 @@ export function GlassyOtp({
           <span className="mizan-otp-tag">{t.preview}</span>
           <h2>{t.success}</h2>
           <p>{t.successDetail}</p>
+          {isPreview && (
+            <button className="mizan-otp-restart" type="button" onClick={restartPreview}>
+              <RefreshCw size={16} aria-hidden="true" />{t.reset}
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -127,7 +141,7 @@ export function GlassyOtp({
             <InputOTP maxLength={6} value={code}
               onChange={value => { setCode(normalizeOtp(value)); if (state === "error") setState("idle"); setNotice(""); }}
               pasteTransformer={normalizeOtp} inputMode="numeric" autoComplete="one-time-code"
-              aria-label={t.codeLabel} disabled={state === "checking"}
+              aria-label={t.codeLabel} aria-invalid={state === "error"} disabled={state === "checking"}
               containerClassName="mizan-otp-grid">
               <InputOTPGroup className="mizan-otp-slot-group" dir="ltr">
                 {Array.from({ length: 6 }, (_, index) => <InputOTPSlot key={index} index={index} className="mizan-otp-slot" />)}
