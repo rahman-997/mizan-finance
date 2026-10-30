@@ -113,6 +113,7 @@ test("glassy OTP displays Arabic and Turkish translations", async () => {
       }),
     );
 
+  assert.match(render("ar"), /class="mizan-otp-step" dir="ltr">01 \/ 02/);
   assert.match(render("ar"), /تأكيد رقم هاتفك/);
   assert.match(render("ar"), /رمز التحقق المكوّن من ست خانات/);
   assert.match(render("tr"), /Numaranızı doğrulayın/);
