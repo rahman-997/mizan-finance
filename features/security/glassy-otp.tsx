@@ -134,7 +134,7 @@ export function GlassyOtp({
         </div>
       ) : (
         <>
-          <span className="mizan-otp-step">01 / 02</span>
+          <span className="mizan-otp-step" dir="ltr">01 / 02</span>
           <h2>{t.title}</h2>
           <p className="mizan-otp-description">{t.caption}</p>
           <form className="mizan-otp-form" onSubmit={submit}>
