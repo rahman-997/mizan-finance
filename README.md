@@ -30,7 +30,11 @@ Mizan is a bilingual, privacy-first personal finance planner built as a complete
 ## Project links
 
 - Repository: https://github.com/rahman-997/mizan-finance
-- Live demo: https://mizan-finance-rahman-997.netlify.app
+- Historical demo URL (availability and current version **not verified**): https://mizan-finance-rahman-997.netlify.app
+
+## Release readiness
+
+Before any production publication, follow the [release checklist and OTP security handoff](docs/RELEASE_READINESS.md). The current OTP screen is a **visual-only preview**, not sign-in. CI validates the actual OTP React component in a dedicated Chrome test harness, but a deployed Vinext/Cloudflare route still requires live smoke testing.
 
 ## Run locally
 
