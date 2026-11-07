@@ -17,7 +17,16 @@ export type Budget = {
 
 export type RecurringExpense = { id: string; day: number; nextDate: string; draft: TransactionDraft };
 
+export type SavingsGoal = { id: string; title: string; target: number; saved: number };
+
+export type Holding = { id: string; label: string; kind: "asset" | "liability"; value: number };
+
+export type PlannedPurchase = { id: string; title: string; amount: number; targetDate: string };
+
 export type FinanceData = {
+  plans?: PlannedPurchase[];
+  holdings?: Holding[];
+  goals?: SavingsGoal[];
   transactions: Transaction[];
   budgets: Budget[];
   recurring?: RecurringExpense[];

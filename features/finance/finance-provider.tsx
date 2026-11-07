@@ -3,7 +3,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { seedData } from "./seed-data";
-import type { Budget, FinanceData, Transaction, TransactionDraft } from "./types";
+import type { Budget, FinanceData, SavingsGoal, Holding, PlannedPurchase, Transaction, TransactionDraft } from "./types";
+import { addPlan, editPlan, deletePlan } from "@/lib/finance-plans.mjs";
+import { addHolding, editHolding, removeHolding } from "@/lib/finance-holdings.mjs";
+import { appendGoal, changeGoal, deleteGoal } from "@/lib/goal-utils.mjs";
 
 import { parseBackup, materializeRecurring, appendTransaction, appendMonthlyExpense, localDate } from "@/lib/finance-backup.mjs";
 import { createFinanceJournal } from "@/lib/finance-journal.mjs";
@@ -32,6 +35,15 @@ type FinanceContextValue = FinanceData & {
   updateTransaction: (id: string, draft: TransactionDraft) => void;
   deleteTransaction: (id: string) => void;
   updateBudget: (budget: Budget) => void;
+  addGoal: (draft: Omit<SavingsGoal, "id">) => void;
+  editGoal: (id: string, draft: Omit<SavingsGoal, "id">) => void;
+  removeGoal: (id: string) => void;
+  addHolding: (draft: Omit<Holding, "id">) => void;
+  editHolding: (id: string, draft: Omit<Holding, "id">) => void;
+  removeHolding: (id: string) => void;
+  addPlan: (draft: Omit<PlannedPurchase, "id">) => void;
+  editPlan: (id: string, draft: Omit<PlannedPurchase, "id">) => void;
+  deletePlan: (id: string) => void;
   resetDemo: () => void;
   restoreBackup: (value: unknown) => void;
   addMonthlyExpense: (draft: TransactionDraft) => void;
@@ -152,6 +164,39 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     toast.success("Budget updated");
   }, [commit]);
 
+  const addGoal = useCallback((draft: Omit<SavingsGoal, "id">) => {
+    const goal: SavingsGoal = { ...draft, id: globalThis.crypto?.randomUUID?.() ?? `goal-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    commit((current) => appendGoal(current, goal));
+  }, [commit]);
+  const editGoal = useCallback((id: string, draft: Omit<SavingsGoal, "id">) => {
+    commit((current) => changeGoal(current, id, draft));
+  }, [commit]);
+  const removeGoal = useCallback((id: string) => {
+    commit((current) => deleteGoal(current, id));
+  }, [commit]);
+
+  const addHoldingRecord = useCallback((draft: Omit<Holding, "id">) => {
+    const item: Holding = { ...draft, id: globalThis.crypto?.randomUUID?.() ?? `holding-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    commit(current => addHolding(current, item));
+  }, [commit]);
+  const editHoldingRecord = useCallback((id: string, draft: Omit<Holding, "id">) => {
+    commit(current => editHolding(current, id, draft));
+  }, [commit]);
+  const removeHoldingRecord = useCallback((id: string) => {
+    commit(current => removeHolding(current, id));
+  }, [commit]);
+
+  const addPlannedPurchase = useCallback((draft: Omit<PlannedPurchase,"id">) => {
+    const item: PlannedPurchase = { ...draft, id: globalThis.crypto?.randomUUID?.() ?? `plan-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    commit(current => addPlan(current, item));
+  }, [commit]);
+  const editPlannedPurchase = useCallback((id: string, draft: Omit<PlannedPurchase,"id">) => {
+    commit(current => editPlan(current,id,draft));
+  }, [commit]);
+  const deletePlannedPurchase = useCallback((id: string) => {
+    commit(current => deletePlan(current,id));
+  }, [commit]);
+
   const resetDemo = useCallback(() => {
     let storageAvailable = true;
     try {
@@ -169,6 +214,13 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const restoreBackup = useCallback((value: unknown) => {
+    // Restores are writes too. A stale tab must not silently replace changes
+    // already committed by another tab, even if the backup is valid.
+    const disk = window.localStorage.getItem(STORAGE_KEY);
+    if (storageConflict || !equivalentSnapshots(disk, persisted.current)) {
+      setStorageConflict(true);
+      throw new Error("EXTERNAL_CHANGE");
+    }
     const restored = materializeRecurring(parseBackup(value), localDate());
     // Persist before replacing the current view. Failure leaves the current data intact.
     const serialized = JSON.stringify(restored);
@@ -177,7 +229,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     journal.current.replace(restored);
     setStorageConflict(false);
     setData(restored); setStorageError(null); setIsLoading(false);
-  }, []);
+  }, [storageConflict]);
   const addMonthlyExpense = useCallback((draft: TransactionDraft) => {
     const id = globalThis.crypto?.randomUUID?.() ?? `rule-${Date.now()}`;
     commit((current) => appendMonthlyExpense(current, {
@@ -189,8 +241,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [commit]);
 
   const value = useMemo(
-    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
-    [data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
+    () => ({ ...data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, addHolding: addHoldingRecord, editHolding: editHoldingRecord, removeHolding: removeHoldingRecord, addPlan: addPlannedPurchase, editPlan: editPlannedPurchase, deletePlan: deletePlannedPurchase, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense }),
+    [data, isLoading, storageError, storageConflict, reloadFromStorage, addTransaction, updateTransaction, deleteTransaction, updateBudget, addGoal, editGoal, removeGoal, addHoldingRecord, editHoldingRecord, removeHoldingRecord, addPlannedPurchase, editPlannedPurchase, deletePlannedPurchase, resetDemo, restoreBackup, addMonthlyExpense, removeMonthlyExpense],
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;

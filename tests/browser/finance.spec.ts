@@ -112,3 +112,36 @@ test('concurrent tabs warn instead of silently overwriting finance data', async 
   expect(after).toBe(before);
   await other.close();
 });
+
+
+test('a stale tab cannot overwrite newer financial records by restoring a backup', async ({page,context}) => {
+  await page.goto('/');
+  await expect(page.locator('.v16-dashboard')).toBeVisible();
+  await page.waitForFunction(() => Boolean(localStorage.getItem('mizan-finance-v1')));
+  const stale = await context.newPage();
+  await stale.goto('/');
+  await expect(stale.locator('.v16-dashboard')).toBeVisible();
+
+  // The first tab commits a real transaction after both tabs are loaded.
+  await page.locator('.page-header button').click();
+  const add = page.getByRole('dialog');
+  await add.locator('#transaction-title').fill('Keep newer tab records');
+  await add.locator('#transaction-amount').fill('43.21');
+  await add.locator('button[type=submit]').click();
+  await expect(add).toHaveCount(0);
+  await expect(stale.getByText('Financial data changed in another tab')).toBeVisible();
+
+  const before = await stale.evaluate(() => localStorage.getItem('mizan-finance-v1'));
+  expect(before).toContain('Keep newer tab records');
+  await stale.locator('input[type=file]').setInputFiles(file({transactions:[],budgets:[],recurring:[]}));
+  const confirm = stale.getByRole('dialog');
+  await expect(confirm).toBeVisible();
+  await confirm.getByRole('button', {name:'Replace and restore'}).click();
+  // A stale backup cannot bypass multi-tab write-conflict protections.
+  await expect(confirm).toBeVisible();
+  await expect(confirm.getByRole('alert')).toContainText('another tab');
+  expect(await stale.evaluate(() => localStorage.getItem('mizan-finance-v1'))).toBe(before);
+  await page.reload();
+  await expect(page.getByText('Keep newer tab records')).toBeVisible();
+  await stale.close();
+});

@@ -21,6 +21,10 @@ export const seedData: FinanceData = {
     { id: "tx-11", title: "Home internet", amount: 36, type: "expense", category: "Housing", date: isoDate(-2, 15) },
     { id: "tx-12", title: "Book order", amount: 54, type: "expense", category: "Learning", date: isoDate(-3, 11) },
   ],
+  goals: [
+    { id: "demo-goal-1", title: "Emergency cushion", target: 5000, saved: 1200 },
+    { id: "demo-goal-2", title: "Weekend trip", target: 900, saved: 300 },
+  ],
   budgets: [
     { category: "Housing", limit: 1450 },
     { category: "Food", limit: 500 },
