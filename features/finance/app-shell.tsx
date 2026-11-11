@@ -198,6 +198,8 @@ export function AppShell({ view }: { view: AppView }) {
         </div>}
       </nav>
 
+
+      <a href="/verify" className="mizan-mobile-otp-preview" aria-label={language === "ar" ? "معاينة واجهة التحقق" : "Preview OTP interface"}><ShieldCheck aria-hidden="true" />{language === "ar" ? "معاينة OTP" : "OTP preview"}</a>
       <TransactionForm open={newOpen} onOpenChange={setNewOpen} onSubmit={finance.addTransaction} />
     </div>
   );

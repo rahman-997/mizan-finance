@@ -193,3 +193,9 @@ Two more sections increase the development branch to **12 pages**.
 - **Testing**: Dedicated unit checks prove planned purchases never create transactions, preserve old backups and reject malicious/corrupt records. Browser regressions cover EN/AR lifecycle, full v5 backup restore, 320px navigation and production cold-offline editing.
 
 These are developer-branch-only features. PR #5 remains draft, unmerged and not deployed. Physical Android install/upgrade and accessibility checks are still needed before release.
+
+## OTP interface preview
+
+Visit `/verify` to preview an interactive glassmorphism OTP component. It supports keyboard input, paste, six-digit validation, Arabic/Persian numerals, multilingual copy (English/Arabic/Turkish), error and visual success states, responsive layouts, and reduced-motion preferences. The preview code is `246810`.
+
+**Security note:** This is **not** authentication. The app still stores finance data locally with no accounts or SMS delivery; completing the preview does not grant access or protect data. For production integration, pass a server-side code-verification callback to `GlassyOtp` and implement server-enforced expiration, attempt limits, sessions and a real resend endpoint. Never use `verifyPreviewOtp` in real authorization.

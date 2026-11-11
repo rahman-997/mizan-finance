@@ -47,3 +47,6 @@ jobs:
 
       - name: Validate project
         run: npm run ci
+
+      - name: Validate non-authentication OTP preview in Chromium
+        run: node tests/otp-browser-smoke.mjs
