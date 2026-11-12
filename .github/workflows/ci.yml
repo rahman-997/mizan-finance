@@ -43,7 +43,35 @@ jobs:
           retention-days: 7
 
       - name: Block moderate-or-higher dependency advisories, including build tools
+        id: security_audit
         run: npm audit --audit-level=moderate
+
+      - name: Prepare review-only lockfile remediation proposal
+        if: failure() && steps.security_audit.outcome == 'failure'
+        run: |
+          # Never commit proposals automatically; audit remains blocking.
+          npm audit fix --package-lock-only --ignore-scripts --no-fund || true
+          node <<'NODE'
+          const fs=require('node:fs');
+          const {execFileSync}=require('node:child_process');
+          if(execFileSync('git',['diff','--','package.json'],{encoding:'utf8'}).trim()){
+            throw new Error('Refusing proposal: package.json changed');
+          }
+          const previous=JSON.parse(execFileSync('git',['show','HEAD:package-lock.json'],{encoding:'utf8'}));
+          const updated=JSON.parse(fs.readFileSync('package-lock.json','utf8'));
+          if(previous.lockfileVersion!==updated.lockfileVersion)throw new Error('Lockfile version changed');
+          const oldPackages=previous.packages||{}, nextPackages=updated.packages||{};
+          const changed={};
+          for(const key of new Set([...Object.keys(oldPackages),...Object.keys(nextPackages)])){
+            if(JSON.stringify(oldPackages[key])!==JSON.stringify(nextPackages[key])){
+              changed[key]=Object.hasOwn(nextPackages,key)?nextPackages[key]:null;
+            }
+          }
+          console.log('MIZAN_LOCK_PROPOSAL_BEGIN');
+          console.log(Buffer.from(JSON.stringify({baseCount:Object.keys(oldPackages).length,changed})).toString('base64'));
+          console.log('MIZAN_LOCK_PROPOSAL_END');
+          console.log('Lockfile entries proposed: '+Object.keys(changed).length);
+          NODE
 
       - name: Validate project
         run: npm run ci
