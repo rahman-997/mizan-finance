@@ -99,7 +99,10 @@ jobs:
       - name: Validate project
         run: npm run ci
 
-      - name: Smoke test OTP in headless Chrome
+      - name: Install pinned Playwright Chromium for OTP smoke test
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke test OTP in headless Chromium
         run: node tests/otp-browser-smoke.mjs
 
       - name: Upload OTP browser screenshots
