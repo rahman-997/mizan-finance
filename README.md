@@ -24,12 +24,17 @@ Mizan is a bilingual, privacy-first personal finance planner built as a complete
 - `/transactions` — searchable transaction ledger
 - `/budgets` — monthly category limits
 - `/insights` — spending and cash-flow analysis
+- `/verify` — six-digit OTP UI **preview only** (English, Arabic RTL, Turkish)
 - Unknown routes — custom not-found state
 
 ## Project links
 
 - Repository: https://github.com/rahman-997/mizan-finance
-- Live demo: https://mizan-finance-rahman-997.netlify.app
+- Historical demo URL (availability and version **not verified**): https://mizan-finance-rahman-997.netlify.app
+
+## Release readiness
+
+Before any production publication, follow the [release checklist and OTP security handoff](docs/RELEASE_READINESS.md). The current OTP screen is a **visual-only preview**, not sign-in. CI validates the actual OTP React component in a dedicated Chrome test harness, but a deployed Vinext/Cloudflare route still requires live smoke testing.
 
 ## Run locally
 
@@ -193,3 +198,9 @@ Two more sections increase the development branch to **12 pages**.
 - **Testing**: Dedicated unit checks prove planned purchases never create transactions, preserve old backups and reject malicious/corrupt records. Browser regressions cover EN/AR lifecycle, full v5 backup restore, 320px navigation and production cold-offline editing.
 
 These are developer-branch-only features. PR #5 remains draft, unmerged and not deployed. Physical Android install/upgrade and accessibility checks are still needed before release.
+
+## OTP interface preview
+
+Visit `/verify` to preview an interactive glassmorphism OTP component. It supports keyboard input, paste, six-digit validation, Arabic/Persian numerals, multilingual copy (English/Arabic/Turkish), error and visual success states, responsive layouts, and reduced-motion preferences. The preview code is `246810`.
+
+**Security note:** This is **not** authentication. The app still stores finance data locally with no accounts or SMS delivery; completing the preview does not grant access or protect data. For production integration, pass a server-side code-verification callback to `GlassyOtp` and implement server-enforced expiration, attempt limits, sessions and a real resend endpoint. Never use `verifyPreviewOtp` in real authorization.

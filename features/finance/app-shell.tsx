@@ -116,6 +116,7 @@ export function AppShell({ view }: { view: AppView }) {
               </a>
             );
           })}
+          <a href="/verify" className="nav-link" style={{ marginTop: 14 }}><ShieldCheck aria-hidden="true" /><span>{language === "ar" ? "معاينة التحقق" : "OTP UI preview"}</span></a>
         </nav>
         <div className="sidebar-note">
           <span className="signal-dot" aria-hidden="true" />
@@ -197,6 +198,8 @@ export function AppShell({ view }: { view: AppView }) {
             </a>)}
         </div>}
       </nav>
+
+      <a href="/verify" className="mizan-mobile-otp-preview" aria-label={language === "ar" ? "معاينة واجهة التحقق" : "Preview OTP interface"}><ShieldCheck aria-hidden="true" />{language === "ar" ? "معاينة OTP" : "OTP preview"}</a>
 
       <TransactionForm open={newOpen} onOpenChange={setNewOpen} onSubmit={finance.addTransaction} />
     </div>
