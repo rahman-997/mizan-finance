@@ -58,3 +58,18 @@ test("monthlySeries always returns the requested number of periods", () => {
   assert.equal(result.length, 6);
   assert.ok(result.every((item) => "income" in item && "expenses" in item));
 });
+
+
+test("spendingByCategory supports prototype-like user category names safely", () => {
+  const sample = [
+    { category: "__proto__", amount: 25, type: "expense" },
+    { category: "__proto__", amount: 5, type: "expense" },
+    { category: "constructor", amount: 12, type: "expense" },
+    { category: "toString", amount: 7, type: "expense" },
+  ];
+  assert.deepEqual(spendingByCategory(sample), [
+    { category: "__proto__", amount: 30 },
+    { category: "constructor", amount: 12 },
+    { category: "toString", amount: 7 },
+  ]);
+});
