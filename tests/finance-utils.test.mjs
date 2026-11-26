@@ -59,7 +59,8 @@ test("monthlySeries always returns the requested number of periods", () => {
   assert.ok(result.every((item) => "income" in item && "expenses" in item));
 });
 
-test("spendingByCategory supports prototype-like user category names safely in V16", () => {
+
+test("spendingByCategory supports prototype-like user category names safely", () => {
   const sample = [
     { category: "__proto__", amount: 25, type: "expense" },
     { category: "__proto__", amount: 5, type: "expense" },
