@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-import { validDate } from "@/lib/finance-backup.mjs";
+import { z } from "zod/v3";
+import { validDate, localDate } from "@/lib/finance-backup.mjs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,14 +42,12 @@ const schema = z.object({
 
 type FormValues = z.input<typeof schema>;
 
-const today = new Date().toISOString().slice(0, 10);
-
 const emptyValues: FormValues = {
   title: "",
   amount: "",
   type: "expense",
   category: "Food",
-  date: today,
+  date: "",
   note: "",
 };
 
@@ -68,6 +66,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSubmit, exp
     handleSubmit,
     reset,
     control,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: emptyValues });
 
@@ -83,15 +82,25 @@ export function TransactionForm({ open, onOpenChange, transaction, onSubmit, exp
             date: transaction.date,
             note: transaction.note ?? "",
           }
-        : emptyValues,
+        : {...emptyValues,date:localDate()},
     );
   }, [open, transaction, reset]);
 
   const submit = handleSubmit(async (values) => {
     const result = schema.parse(values);
     await Promise.resolve();
-    onSubmit(expenseOnly ? {...result,type:"expense"} : result);
-    onOpenChange(false);
+    try {
+      onSubmit(expenseOnly ? {...result,type:"expense"} : result);
+      onOpenChange(false);
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      const message = code === "TRANSACTION_LIMIT"
+        ? (language === "ar" ? "وصلت للحد الأقصى: 10,000 عملية. احذف عملية قبل الإضافة." : "The 10,000 transaction limit is reached. Delete an entry before adding another.")
+        : code === "RECURRING_LIMIT"
+          ? (language === "ar" ? "وصلت للحد الأقصى: 100 مصروف شهري. أوقف قاعدة قبل الإضافة." : "The 100 monthly expense limit is reached. Stop a rule before adding another.")
+          : (language === "ar" ? "تعذرت الإضافة. حاول مجدداً." : "Could not add this entry. Please try again.");
+      setError("root", {message});
+    }
   });
 
   return (
@@ -160,6 +169,7 @@ export function TransactionForm({ open, onOpenChange, transaction, onSubmit, exp
             <Textarea id="transaction-note" rows={3} placeholder={t("optionalContext")} aria-invalid={Boolean(errors.note)} {...register("note")} />
             {errors.note && <p className="form-error" role="alert">{errors.note.message}</p>}
           </div>
+          {errors.root && <p className="form-error" role="alert">{errors.root.message}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
             <Button type="submit" disabled={isSubmitting}>{isSubmitting ? t("saving") : transaction ? t("saveChanges") : t("addTransaction")}</Button>
