@@ -320,7 +320,7 @@ button.transaction-row:hover { background: var(--secondary); }
 
 @media (max-width: 760px) {
   .sidebar-panel { position: static; display: flex; width: auto; height: 72px; flex-direction: row; align-items: center; justify-content: space-between; padding: 12px 18px; }
-  .brand-lockup small, .desktop-nav, .sidebar-note { display: none; }
+  .brand-lockup small, .desktop-nav, .sidebar-note, .sidebar-panel > a.nav-link { display: none; }
   .sidebar-actions { margin: 0; }
   .content-panel, [dir="rtl"] .content-panel { margin: 0; padding: 28px 16px 102px; }
   .page-header { align-items: flex-start; margin-bottom: 26px; }
@@ -379,7 +379,13 @@ button.transaction-row:hover { background: var(--secondary); }
 /* Entry point for the optional glass OTP design preview on small screens. */
 .mizan-mobile-otp-preview { display:none; }
 @media (max-width: 760px) {
-  .mizan-mobile-otp-preview { display:inline-flex; position:fixed; right:16px; bottom:84px; z-index:29; align-items:center; gap:6px; border:1px solid rgba(23,27,49,.13); border-radius:100px; padding:10px 13px; background:#171b31; color:#bff26b; font-size:11px; font-weight:750; text-decoration:none; box-shadow:0 7px 25px rgba(12,19,33,.17); }
-  [dir="rtl"] .mizan-mobile-otp-preview { right:auto; left:16px; }
+  .mizan-mobile-otp-preview { display:inline-flex; position:fixed; left:16px; bottom:84px; z-index:29; align-items:center; gap:6px; border:1px solid rgba(23,27,49,.13); border-radius:100px; padding:10px 13px; background:#171b31; color:#bff26b; font-size:11px; font-weight:750; text-decoration:none; box-shadow:0 7px 25px rgba(12,19,33,.17); }
+  [dir="rtl"] .mizan-mobile-otp-preview { left:auto; right:16px; }
   .mizan-mobile-otp-preview svg { width:15px; height:15px; }
+}
+
+@media (max-width: 340px) {
+  .sidebar-panel { padding: 12px 10px; }
+  .brand-lockup { gap: 8px; }
+  .sidebar-actions { gap: 0; }
 }
